@@ -1,5 +1,5 @@
-name: "리팩토링"
-description: "코드 리팩토링 및 구조 개선 템플릿"
+name: "환경 설정"
+description: "개발 환경 세팅"
 labels: "⚙ Setting"
 title: "⚙ Setting: "
 body:

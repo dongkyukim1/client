@@ -1,7 +1,7 @@
-name: "기능 구현"
-description: "기능 구현"
-labels: "✨ Feature"
-title: "✨ Feature: "
+name: "문서화 작업"
+description: "문서화 작업"
+labels: "📝 Docs"
+title: "📝 Docs: "
 body:
   - type: textarea
     attributes:
