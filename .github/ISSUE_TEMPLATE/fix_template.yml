@@ -1,5 +1,5 @@
-name: "리팩토링"
-description: "코드 리팩토링 및 구조 개선 템플릿"
+name: "오류 수정"
+description: "오류 설명 및 수정"
 labels: "🐞 Bug"
 title: "🔨 Fix: "
 body:
