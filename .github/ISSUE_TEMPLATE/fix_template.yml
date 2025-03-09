@@ -1,0 +1,23 @@
+name: "리팩토링"
+description: "코드 리팩토링 및 구조 개선 템플릿"
+labels: "🐞 Bug"
+title: "🔨 Fix: "
+body:
+  - type: textarea
+    attributes:
+      label: 🤔 오류 내용
+      placeholder: 오류 내용 및 오류 발생 상황을 알려주세요!
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 🚩 오류 발견 위치
+      placeholder: 오류 발견 위치를 작성해 주세요!
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Etc
+      placeholder: 기타 설명
+    validations:
+      required: false
