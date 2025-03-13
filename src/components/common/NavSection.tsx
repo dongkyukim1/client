@@ -34,15 +34,15 @@ export default function NavSection() {
         
         <div className="hidden md:flex items-center justify-center max-w-md w-full mx-4">
           <div className="relative w-full">
-            <div className="flex items-center border border-gray-200 rounded-full bg-white shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden pl-5 pr-2 py-2">
+            <div className="flex items-center rounded-full bg-white shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden pl-5 pr-2 py-2">
               <div className="flex-grow">
                 <input 
                   type="text" 
                   placeholder="어디로 여행가세요?" 
-                  className="w-full text-sm focus:outline-none" 
+                  className="w-full text-sm focus:outline-none border-none" 
                 />
               </div>
-              <button className="ml-2 bg-rose-500 text-white p-2 rounded-full hover:bg-rose-600 transition-colors">
+              <button className="ml-2 bg-rose-500 text-white p-2 rounded-full hover:bg-rose-600 transition-colors border-none">
                 <FaSearch className="text-sm" />
               </button>
             </div>

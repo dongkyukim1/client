@@ -1,7 +1,27 @@
 'use client'
 
+import { useState, useEffect } from 'react';
 import { Box, Container, Heading, Image, Text } from '@chakra-ui/react'
 import { FaStar, FaMapMarkerAlt } from 'react-icons/fa'
+import CategorySlider from './CategorySlider'
+
+// 카테고리와 지역을 매핑하는 데이터
+const categoryRegionMapping = {
+  1: [1, 5, 7], // 한적한 시골 -> 서울, 강원도, 통영
+  2: [2, 6, 8], // 절친 이야기 -> 부산, 전주, 여수
+  3: [3, 5, 7], // 최고의 전망 -> 제주, 강원도, 통영
+  4: [4, 6], // 한옥 -> 경주, 전주
+  5: [3, 5], // 국립공원 -> 제주, 강원도
+  6: [4, 6], // 정적 공간 -> 경주, 전주
+  7: [2, 8], // 맛집 수영장 -> 부산, 여수
+  8: [2, 3, 7, 8], // 해변 바로 앞 -> 부산, 제주, 통영, 여수
+  9: [3, 7], // 섬 -> 제주, 통영
+  10: [1, 3], // 기상천외한 숙소 -> 서울, 제주
+  11: [5], // 캠핑 -> 강원도
+  12: [5, 6], // 통나무집 -> 강원도, 전주
+  13: [3, 4], // 동굴 -> 제주, 경주
+  14: [1, 2] // 조소형 주택 -> 서울, 부산
+};
 
 const regions = [
   {
@@ -78,40 +98,112 @@ const regions = [
   }
 ]
 
-export default function RegionSection() {
-  return (
-    <Box as="section" className="section">
-      <Container className="section-container">
-        <Heading as="h2" className="section-title">
-          AI 추천 인기 여행 코스
-        </Heading>
-        
-        <Box className="festival-grid">
-          {regions.map((region) => (
-            <Box key={region.id} className="festival-card">
-              <Box className="festival-image">
-                <Image
-                  src={region.image}
-                  alt={region.name}
-                />
-              </Box>
-              <Box className="festival-content">
-                <Text className="festival-title">
-                  {region.name}
-                </Text>
-                <Box className="festival-date" display="flex" alignItems="center">
-                  <Box as={FaStar} mr={2} />
-                  <Text>{region.rating} (리뷰 {region.reviews}개)</Text>
-                </Box>
-                <Box className="festival-location" display="flex" alignItems="center">
-                  <Box as={FaMapMarkerAlt} className="festival-location-icon" />
-                  <Text>{region.description}</Text>
-                </Box>
-              </Box>
-            </Box>
-          ))}
-        </Box>
-      </Container>
-    </Box>
-  )
+interface RegionSectionProps {
+  onFilterClick?: () => void;
 }
+
+export default function RegionSection({ onFilterClick }: RegionSectionProps) {
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [filteredRegions, setFilteredRegions] = useState(regions);
+
+  // 카테고리 선택 핸들러
+  const handleCategorySelect = (categoryId: number) => {
+    if (selectedCategory === categoryId) {
+      // 이미 선택된 카테고리를 다시 클릭하면 선택 해제
+      setSelectedCategory(null);
+    } else {
+      setSelectedCategory(categoryId);
+    }
+  };
+
+  // 선택된 카테고리에 따라 지역 필터링
+  useEffect(() => {
+    if (selectedCategory === null) {
+      // 선택된 카테고리가 없으면 모든 지역 표시
+      setFilteredRegions(regions);
+    } else {
+      // 선택된 카테고리에 해당하는 지역만 필터링
+      const regionIds = categoryRegionMapping[selectedCategory as keyof typeof categoryRegionMapping] || [];
+      const filtered = regions.filter(region => regionIds.includes(region.id));
+      setFilteredRegions(filtered);
+    }
+  }, [selectedCategory]);
+
+  return (
+    <section className="py-0 -mt-24">
+      <div className="container mx-auto px-4">
+        <CategorySlider 
+          onFilterClick={onFilterClick} 
+          onCategorySelect={handleCategorySelect}
+          selectedCategory={selectedCategory}
+        />
+        
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">
+            {selectedCategory 
+              ? `${categories.find(c => c.id === selectedCategory)?.name} 추천 여행 코스` 
+              : '모든 여행 코스'}
+          </h2>
+          
+          {selectedCategory && (
+            <button 
+              className="px-4 py-2 bg-white text-pink-600 border border-pink-200 rounded-md shadow-sm hover:bg-pink-50 transition-colors duration-200 font-medium"
+              onClick={() => setSelectedCategory(null)}
+            >
+              모두 보기
+            </button>
+          )}
+        </div>
+        
+        {filteredRegions.length === 0 ? (
+          <div className="text-center py-10">
+            <p className="text-gray-500">해당 카테고리에 맞는 여행 코스가 없습니다.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredRegions.map((region) => (
+              <div key={region.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
+                <div className="h-48 overflow-hidden">
+                  <img
+                    src={region.image}
+                    alt={region.name}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                  />
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-bold mb-1">{region.name}</h3>
+                  <div className="flex items-center mb-2 text-sm">
+                    <FaStar className="text-yellow-400 mr-1" />
+                    <span>{region.rating} (리뷰 {region.reviews}개)</span>
+                  </div>
+                  <div className="flex items-start text-sm text-gray-600">
+                    <FaMapMarkerAlt className="mt-1 mr-1 flex-shrink-0" />
+                    <p>{region.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// CategorySlider에서 사용하는 categories 배열을 여기서도 사용하기 위해 복사
+const categories = [
+  { id: 1, name: "한적한 시골", icon: "🏡" },
+  { id: 2, name: "절친 이야기", icon: "🎫" },
+  { id: 3, name: "최고의 전망", icon: "🏞️" },
+  { id: 4, name: "한옥", icon: "🏯" },
+  { id: 5, name: "국립공원", icon: "🏔️" },
+  { id: 6, name: "정적 공간", icon: "🧘" },
+  { id: 7, name: "맛집 수영장", icon: "🍽️" },
+  { id: 8, name: "해변 바로 앞", icon: "🏖️" },
+  { id: 9, name: "섬", icon: "🏝️" },
+  { id: 10, name: "기상천외한 숙소", icon: "🏨" },
+  { id: 11, name: "캠핑", icon: "⛺" },
+  { id: 12, name: "통나무집", icon: "🏡" },
+  { id: 13, name: "동굴", icon: "🏞️" },
+  { id: 14, name: "조소형 주택", icon: "🏠" },
+];

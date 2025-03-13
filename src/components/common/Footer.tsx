@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="flex flex-wrap items-center justify-between">
           <div className="flex items-center space-x-6 mb-2 md:mb-0">
             <span className="text-sm font-medium text-gray-800">TripPlanner AI</span>
-            <span className="text-xs text-gray-500">© 2023</span>
+            <span className="text-xs text-gray-500">© 2025</span>
           </div>
           
           <div className="flex flex-wrap items-center">
