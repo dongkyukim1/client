@@ -34,10 +34,13 @@ export default function HeroSection() {
         <div className="w-full h-full">
           <div className="relative w-full h-[70vh] min-h-[550px] max-h-[700px]">
             <div className="absolute inset-0 bg-gradient-to-r from-gray-800/70 to-gray-600/40"></div>
-            <img 
-              src="/images/hero-background.jpg" 
-              alt="여행 배경" 
-              className="w-full h-full object-cover object-center brightness-105"
+            <video 
+              src="/videos/travel-video.mp4" 
+              autoPlay 
+              loop 
+              muted 
+              playsInline
+              className="w-full h-full object-cover object-center"
             />
           </div>
         </div>
@@ -120,25 +123,31 @@ export default function HeroSection() {
                     <FaUser className="mr-2 text-rose-500" />
                     <span>인원</span>
                   </label>
-                  <div className="flex gap-2">
-                    <select 
-                      className="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
-                      value={adults}
-                      onChange={(e) => setAdults(e.target.value)}
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                        <option key={num} value={num}>{num}명 성인</option>
-                      ))}
-                    </select>
-                    <select 
-                      className="w-1/2 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
-                      value={children}
-                      onChange={(e) => setChildren(e.target.value)}
-                    >
-                      {[0, 1, 2, 3, 4, 5, 6].map(num => (
-                        <option key={num} value={num}>{num}명 어린이</option>
-                      ))}
-                    </select>
+                  <div className="flex gap-3">
+                    <div className="w-1/2">
+                      <select 
+                        className="w-full px-2 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 appearance-none bg-white text-xs border-gray-300 rounded-lg"
+                        value={adults}
+                        onChange={(e) => setAdults(e.target.value)}
+                        style={{ paddingRight: '25px' }}
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                          <option key={num} value={num}>{num}명 성인</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="w-1/2">
+                      <select 
+                        className="w-full px-2 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 appearance-none bg-white text-xs border-gray-300 rounded-lg"
+                        value={children}
+                        onChange={(e) => setChildren(e.target.value)}
+                        style={{ paddingRight: '25px' }}
+                      >
+                        {[0, 1, 2, 3, 4, 5, 6].map(num => (
+                          <option key={num} value={num}>{num}명 어린이</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -147,7 +156,7 @@ export default function HeroSection() {
               <div className="mt-5 flex justify-end">
                 <button 
                   onClick={handleSearch}
-                  className="bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-medium px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center"
+                  className="bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-medium px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center border-0 outline-none"
                 >
                   <FaSearch className="mr-2" />
                   여행 계획 만들기
