@@ -42,7 +42,7 @@ export default function NavSection() {
                   className="w-full text-sm focus:outline-none border-none" 
                 />
               </div>
-              <button className="ml-2 bg-rose-500 text-white p-2 rounded-full hover:bg-rose-600 transition-colors border-none">
+              <button className="ml-2 bg-pink-500 text-white p-2 rounded-full hover:bg-pink-600 transition-colors border-none">
                 <FaSearch className="text-sm" />
               </button>
             </div>
@@ -63,7 +63,7 @@ export default function NavSection() {
           </Link>
           
           <Link href="/dashboard" className="md:hidden">
-            <button className="bg-rose-500 text-white font-medium px-3 py-2 rounded-full text-xs">
+            <button className="bg-pink-500 text-white font-medium px-3 py-2 rounded-full text-xs">
               AI 여행
             </button>
           </Link>

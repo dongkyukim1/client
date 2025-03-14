@@ -1,3 +1,5 @@
+const colors = require('tailwindcss/colors');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -26,7 +28,7 @@ module.exports = {
             400: '#484848',
           }
         },
-        'rose': {
+        rose: {
           50: '#fff1f2',
           100: '#ffe4e6',
           200: '#fecdd3',
@@ -39,7 +41,7 @@ module.exports = {
           900: '#881337',
           950: '#4c0519',
         },
-        'pink': {
+        pink: {
           50: '#fdf2f8',
           100: '#fce7f3',
           200: '#fbcfe8',
