@@ -42,7 +42,7 @@ body {
 /* 커스텀 유틸리티 클래스 */
 @layer components {
   .btn-primary {
-    @apply bg-rose-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-rose-600 transition-all;
+    @apply bg-pink-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-pink-600 transition-all;
   }
   
   .btn-secondary {
@@ -144,6 +144,66 @@ html {
 
 .section-title::after {
   content: "";
-  @apply absolute bottom-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-rose-500 rounded-full;
+  @apply absolute bottom-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-pink-500 rounded-full;
+}
+
+/* 직접 클래스 정의 */
+.bg-pink-500 {
+  background-color: #ec4899 !important;
+}
+
+.bg-rose-500 {
+  background-color: #f43f5e !important;
+}
+
+/* 필요한 다른 클래스도 추가 */
+
+/* 직접 정의한 색상 클래스 */
+.bg-pink-500 {
+  background-color: #ec4899 !important;
+}
+
+.text-pink-500 {
+  color: #ec4899 !important;
+}
+
+.border-pink-500 {
+  border-color: #ec4899 !important;
+}
+
+/* hover 상태 */
+.hover\:bg-pink-500:hover {
+  background-color: #ec4899 !important;
+}
+
+.hover\:text-pink-500:hover {
+  color: #ec4899 !important;
+}
+
+/* focus 상태 */
+.focus\:bg-pink-500:focus {
+  background-color: #ec4899 !important;
+}
+
+.focus\:ring-pink-500:focus {
+  --tw-ring-color: #ec4899 !important;
+}
+
+/* 다른 pink 색상 음영도 필요하다면 추가 */
+.bg-pink-400 {
+  background-color: #f472b6 !important;
+}
+
+.bg-pink-600 {
+  background-color: #db2777 !important;
+}
+
+/* rose 색상도 필요하다면 추가 */
+.bg-rose-500 {
+  background-color: #f43f5e !important;
+}
+
+.text-rose-500 {
+  color: #f43f5e !important;
 }
 
