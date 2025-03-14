@@ -4,12 +4,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { IoIosClose } from "react-icons/io";
 import Link from "next/link";
+import TermsModal from "@/components/modal/TermsModal";
+import PrivacyModal from "@/components/modal/PrivacyModal";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  
+  // 약관 관련 상태
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
   const router = useRouter();
 
@@ -18,7 +26,22 @@ export default function Signup() {
     console.log("비밀번호:", password);
     console.log("닉네임:", nickname);
     console.log("전화번호:", phoneNumber);
+    console.log("이용약관 동의:", termsAccepted);
+    console.log("개인정보처리방침 동의:", privacyAccepted);
     // 회원가입 로직 추가
+  };
+
+  // 모든 필수 약관에 동의했는지 확인
+  const allAccepted = termsAccepted && privacyAccepted;
+
+  const handleTermsAccept = () => {
+    setTermsAccepted(true);
+    setIsTermsModalOpen(false);
+  };
+
+  const handlePrivacyAccept = () => {
+    setPrivacyAccepted(true);
+    setIsPrivacyModalOpen(false);
   };
 
   return (
@@ -40,6 +63,13 @@ export default function Signup() {
         <div className="space-y-4">
           <input
             type="text"
+            placeholder="닉네임 (2자 이상)"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
+          />
+          <input
+            type="text"
             placeholder="이메일"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -54,21 +84,63 @@ export default function Signup() {
           />
           <input
             type="text"
-            placeholder="닉네임 (2자 이상)"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
-          />
-          <input
-            type="text"
             placeholder="전화번호 (010XXXXXXXX)"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
           />
+          
+          {/* 약관 동의 체크박스 */}
+          <div className="space-y-2 mt-2">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={termsAccepted}
+                onChange={() => setTermsAccepted(!termsAccepted)}
+                className="w-4 h-4 accent-rose-500"
+              />
+              <label htmlFor="terms" className="text-sm text-gray-700">
+                <button
+                  type="button"
+                  onClick={() => setIsTermsModalOpen(true)}
+                  className="text-rose-500 hover:underline bg-transparent border-0"
+                >
+                  이용약관
+                </button>
+                에 동의합니다 (필수)
+              </label>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="privacy"
+                checked={privacyAccepted}
+                onChange={() => setPrivacyAccepted(!privacyAccepted)}
+                className="w-4 h-4 accent-rose-500"
+              />
+              <label htmlFor="privacy" className="text-sm text-gray-700">
+                <button
+                  type="button"
+                  onClick={() => setIsPrivacyModalOpen(true)}
+                  className="text-rose-500 hover:underline bg-transparent border-0"
+                >
+                  개인정보처리방침
+                </button>
+                에 동의합니다 (필수)
+              </label>
+            </div>
+          </div>
+          
           <button
             onClick={handleSignup}
-            className="w-full bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-medium px-4 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-none outline-none"
+            disabled={!allAccepted}
+            className={`w-full ${
+              allAccepted 
+                ? "bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600" 
+                : "bg-gray-300 cursor-not-allowed"
+            } text-white font-medium px-4 py-3 rounded-lg shadow-md transition-all duration-200 border-none outline-none`}
           >
             회원가입
           </button>
@@ -85,6 +157,19 @@ export default function Signup() {
           </Link>
         </p>
       </div>
+      
+      {/* 모달 컴포넌트 */}
+      <TermsModal 
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+        onAccept={handleTermsAccept}
+      />
+      
+      <PrivacyModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+        onAccept={handlePrivacyAccept}
+      />
     </div>
   );
 }
