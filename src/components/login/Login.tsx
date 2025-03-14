@@ -10,7 +10,11 @@ import { RiKakaoTalkFill } from "react-icons/ri";
 import TermsModal from "@/components/modal/TermsModal";
 import PrivacyModal from "@/components/modal/PrivacyModal";
 
-export default function Login() {
+interface LoginProps {
+  handleLogin?: (provider: string) => void;
+}
+
+export default function Login({ handleLogin }: LoginProps) {
   // 탭 전환
   const [isLoginTab, setIsLoginTab] = useState(true);
 
@@ -38,8 +42,17 @@ export default function Login() {
     { title: "카카오", svg: <RiKakaoTalkFill size={20} /> },
   ];
 
-  const handleLogin = () => {
+  const handleLocalLogin = () => {
     // 로그인 로직
+    if (handleLogin) {
+      handleLogin("credentials");
+    }
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    if (handleLogin) {
+      handleLogin(provider);
+    }
   };
 
   const handleSignup = () => {
@@ -93,7 +106,7 @@ export default function Login() {
                 </button>
               </div>
               <button
-                onClick={handleLogin}
+                onClick={handleLocalLogin}
                 className="w-full bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-medium px-4 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-none outline-none"
               >
                 로그인
@@ -113,6 +126,7 @@ export default function Login() {
                 <button
                   key={item.title}
                   className="bg-white hover:!bg-gray-100 flex items-center px-4 w-full h-12 text-sm border border-black rounded-lg"
+                  onClick={() => handleSocialLogin(item.title.toLowerCase())}
                 >
                   <div className="size-5 flex items-center justify-center">
                     {item.svg}
