@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, use } from 'react';
 import { FaArrowLeft, FaCalendarAlt, FaWallet, FaMapMarkerAlt, FaBed, FaUtensils, FaWalking, FaSubway } from 'react-icons/fa'
 import { useRouter } from 'next/navigation'
 import Layout from '../../../components/Layout'
@@ -37,7 +37,8 @@ interface TravelPlan {
   };
 }
 
-export default function TravelPlanDetail({ params }: { params: { id: string } }) {
+export default function TravelPlanDetail(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const router = useRouter();
   const [plan, setPlan] = useState<TravelPlan | null>(null);
   const [loading, setLoading] = useState(true);

@@ -1,5 +1,5 @@
-import LoginModal from "@/components/login/LoginMoadl";
+import Login from "@/components/login/Login";
 
-export default function Login() {
-  return <LoginModal />;
+export default function LoginModal() {
+  return <Login />;
 }
