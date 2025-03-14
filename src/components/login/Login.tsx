@@ -7,6 +7,8 @@ import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import { FaGoogle } from "react-icons/fa";
 import { SiNaver } from "react-icons/si";
 import { RiKakaoTalkFill } from "react-icons/ri";
+import TermsModal from "@/components/modal/TermsModal";
+import PrivacyModal from "@/components/modal/PrivacyModal";
 
 export default function Login() {
   // 탭 전환
@@ -23,6 +25,10 @@ export default function Login() {
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [nickname, setNickname] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
   const router = useRouter();
 
@@ -39,6 +45,8 @@ export default function Login() {
   const handleSignup = () => {
     // 회원가입 로직
   };
+
+  const allAccepted = termsAccepted && privacyAccepted;
 
   return (
     <div className="w-dvw md:w-[568px] bg-white md:rounded-3xl max-md:h-dvh shadow-lg">
@@ -165,9 +173,58 @@ export default function Login() {
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 appearance-none"
               />
+              
+              {/* 약관 동의 체크박스 추가 */}
+              <div className="space-y-2 mt-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={termsAccepted}
+                    onChange={() => setTermsAccepted(!termsAccepted)}
+                    className="w-4 h-4 accent-rose-500"
+                  />
+                  <label htmlFor="terms" className="text-sm text-gray-700">
+                    <button
+                      type="button"
+                      onClick={() => setIsTermsModalOpen(true)}
+                      className="text-rose-500 hover:underline bg-transparent border-0"
+                    >
+                      이용약관
+                    </button>
+                    에 동의합니다 (필수)
+                  </label>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="privacy"
+                    checked={privacyAccepted}
+                    onChange={() => setPrivacyAccepted(!privacyAccepted)}
+                    className="w-4 h-4 accent-rose-500"
+                  />
+                  <label htmlFor="privacy" className="text-sm text-gray-700">
+                    <button
+                      type="button"
+                      onClick={() => setIsPrivacyModalOpen(true)}
+                      className="text-rose-500 hover:underline bg-transparent border-0"
+                    >
+                      개인정보처리방침
+                    </button>
+                    에 동의합니다 (필수)
+                  </label>
+                </div>
+              </div>
+              
               <button
                 onClick={handleSignup}
-                className="w-full bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600 text-white font-medium px-4 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-none outline-none"
+                disabled={!allAccepted}
+                className={`w-full ${
+                  allAccepted 
+                    ? "bg-gradient-to-r from-rose-400 to-pink-500 hover:from-rose-500 hover:to-pink-600" 
+                    : "bg-gray-300 cursor-not-allowed"
+                } text-white font-medium px-4 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border-none outline-none`}
               >
                 회원가입
               </button>
@@ -186,6 +243,25 @@ export default function Login() {
           </>
         )}
       </div>
+
+      {/* 모달 컴포넌트 */}
+      <TermsModal 
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+        onAccept={() => {
+          setTermsAccepted(true);
+          setIsTermsModalOpen(false);
+        }}
+      />
+
+      <PrivacyModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+        onAccept={() => {
+          setPrivacyAccepted(true);
+          setIsPrivacyModalOpen(false);
+        }}
+      />
     </div>
   );
 }
