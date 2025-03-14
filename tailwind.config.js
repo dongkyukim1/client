@@ -77,6 +77,8 @@ module.exports = {
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.5s ease-in-out',
+        'modal-in': 'modal-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'modal-out': 'modal-out 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
       },
       keyframes: {
         fadeIn: {
@@ -87,10 +89,44 @@ module.exports = {
           '0%': { transform: 'translateY(20px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
+        'modal-in': {
+          '0%': { opacity: '0', transform: 'translateY(16px) scale(0.98)' },
+          '60%': { opacity: '1', transform: 'translateY(-6px) scale(1.01)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        'modal-out': {
+          '0%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+          '100%': { opacity: '0', transform: 'translateY(16px) scale(0.98)' },
+        },
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // 스크롤바 스타일링을 위한 플러그인
+    function({ addUtilities }) {
+      const newUtilities = {
+        '.scrollbar-thin': {
+          scrollbarWidth: 'thin',
+          '&::-webkit-scrollbar': {
+            width: '6px',
+            height: '6px',
+          },
+        },
+        '.scrollbar-thumb-gray-300': {
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: '#d1d5db',
+            borderRadius: '3px',
+          },
+        },
+        '.scrollbar-track-gray-100': {
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: '#f3f4f6',
+          },
+        },
+      }
+      addUtilities(newUtilities, ['responsive', 'hover'])
+    }
+  ],
   // Tailwind CSS와 부트스트랩을 함께 사용하기 위한 설정
   corePlugins: {
     preflight: false,
