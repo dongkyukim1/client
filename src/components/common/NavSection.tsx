@@ -19,7 +19,7 @@ export default function NavSection() {
   }, []);
 
   const handleLoginClick = () => {
-    router.push('/login');
+    router.push('/login', { scroll: false });
   };
 
   return (
