@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { IoIosClose } from "react-icons/io";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ModalProps {
   isOpen: boolean;
@@ -36,25 +37,32 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={handleBackdropClick}
+      aria-modal="true"
+      role="dialog"
     >
-      <div
+      <motion.div
         ref={modalRef}
-        className="w-full max-w-md bg-white rounded-lg shadow-xl max-h-[90vh] flex flex-col"
+        className="w-full max-w-2xl bg-white rounded-xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ duration: 0.2 }}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-xl font-bold">{title}</h2>
+        <div className="flex items-center justify-between px-8 py-5 border-b border-gray-100">
+          <h2 className="text-xl font-bold text-gray-800">{title}</h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 bg-transparent border-0"
+            className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200 border-0"
+            aria-label="닫기"
           >
             <IoIosClose className="size-7" />
           </button>
         </div>
 
-        <div className="p-4 overflow-y-auto flex-1">{children}</div>
-      </div>
+        <div className="px-8 py-6 overflow-y-auto flex-1 custom-scrollbar">{children}</div>
+      </motion.div>
     </div>
   );
 } 

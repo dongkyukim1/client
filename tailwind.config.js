@@ -123,6 +123,25 @@ module.exports = {
             backgroundColor: '#f3f4f6',
           },
         },
+        '.custom-scrollbar': {
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#d1d5db #f3f4f6',
+          '&::-webkit-scrollbar': {
+            width: '8px',
+            height: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: '#f3f4f6',
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: '#d1d5db',
+            borderRadius: '4px',
+            '&:hover': {
+              backgroundColor: '#9ca3af',
+            },
+          },
+        },
       }
       addUtilities(newUtilities, ['responsive', 'hover'])
     }
