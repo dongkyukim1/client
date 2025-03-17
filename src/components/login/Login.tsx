@@ -1,19 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import { FaGoogle } from "react-icons/fa";
 import { SiNaver } from "react-icons/si";
 import { RiKakaoTalkFill } from "react-icons/ri";
 import TermsModal from "@/components/modal/TermsModal";
 import PrivacyModal from "@/components/modal/PrivacyModal";
+import { signIn } from "next-auth/react";
+import { signUp } from "@/services/api";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface LoginProps {
   handleLogin?: (provider: string) => void;
 }
 
 export default function Login({ handleLogin }: LoginProps) {
+  const searchParams = useSearchParams();
+
   // 탭 전환
   const [isLoginTab, setIsLoginTab] = useState(true);
 
@@ -33,56 +39,213 @@ export default function Login({ handleLogin }: LoginProps) {
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
-  const router = useRouter();
+  // input에 포커스를 주기위한 ref
+  const loginEmailRef = useRef<HTMLInputElement | null>(null);
+  const loginPasswordRef = useRef<HTMLInputElement | null>(null);
+  const signupEmailRef = useRef<HTMLInputElement | null>(null);
+  const signupPasswordRef = useRef<HTMLInputElement | null>(null);
+  const nicknameRef = useRef<HTMLInputElement | null>(null);
+  const phoneNumberRef = useRef<HTMLInputElement | null>(null);
+  const termsAcceptedRef = useRef<HTMLInputElement | null>(null);
+  const privacyAcceptedRef = useRef<HTMLInputElement | null>(null);
+
+  // 에러 메시지
+  const [loginErrorMessage, setLoginErrorMessage] = useState("");
+  const [signupErrorMessage, setSignupErrorMessage] = useState("");
+  enum AuthErrorMessage {
+    EMAIL_REQUIRED = "이메일을 입력해 주세요.",
+    PASSWORD_REQUIRED = "비밀번호를 입력해 주세요.",
+    NICKNAME_REQUIRED = "닉네임을 입력해 주세요.",
+    PHONE_NUMBER_REQUIRED = "전화번호를 입력해 주세요.",
+    NICKNAME_TOO_SHORT = "닉네임은 2자 이상이어야 합니다.",
+    PASSWORD_TOO_SHORT = "비밀번호는 6자 이상이어야 합니다.",
+    INVALID_EMAIL = "이메일 형식이 잘못되었습니다.",
+    INVALID_PHONE_NUMBER = "전화번호 형식이 잘못되었습니다.",
+    USER_NOT_FOUND = "이메일 혹은 비밀번호가 일치하지 않습니다. 입력한 내용을 다시 확인해 주세요.",
+    DUPLICATE_EMAIL = "사용할 수 없는 이메일입니다. 다른 이메일을 입력해 주세요.",
+    TERMS_ACCEPTED = "이용약관에 동의해 주세요.",
+    PRIVACY_ACCEPTED = "개인정보처리방침에 동의해 주세요.",
+  }
+
+  // 회원가입 성공 상태
+  const [successfulSignup, setSuccessfulSignup] = useState(false);
+
+  // 회원가입 성공 시 토스트 메시지
+  useEffect(() => {
+    if (isLoginTab && successfulSignup) {
+      toast.success("회원가입 성공! 로그인을 진행해 주세요.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+      });
+      loginEmailRef.current?.focus();
+    }
+  }, [isLoginTab, successfulSignup]);
 
   const oauthItems = [
-    { 
-      title: "구글", 
-      svg: <FaGoogle size={18} />, 
-      bgColor: "bg-[#4285F4]", 
-      textColor: "text-white", 
-      hoverColor: "hover:bg-[#3367D6]", 
+    {
+      title: "구글",
+      svg: <FaGoogle size={18} />,
+      bgColor: "bg-[#4285F4]",
+      textColor: "text-white",
+      hoverColor: "hover:bg-[#3367D6]",
       borderColor: "",
       iconBox: "",
-      customButton: false
+      customButton: false,
     },
-    { 
-      title: "네이버", 
-      svg: <SiNaver size={20} className="font-bold" />, 
-      bgColor: "bg-[#03C75A]", 
-      textColor: "text-white", 
-      hoverColor: "hover:bg-[#02b350]", 
+    {
+      title: "네이버",
+      svg: <SiNaver size={20} className="font-bold" />,
+      bgColor: "bg-[#03C75A]",
+      textColor: "text-white",
+      hoverColor: "hover:bg-[#02b350]",
       borderColor: "",
       iconBox: "",
-      customButton: false
+      customButton: false,
     },
-    { 
-      title: "카카오", 
-      svg: <RiKakaoTalkFill size={20} />, 
-      bgColor: "bg-[#FEE500]", 
-      textColor: "text-gray-800", 
-      hoverColor: "hover:bg-[#FDD800]", 
+    {
+      title: "카카오",
+      svg: <RiKakaoTalkFill size={20} />,
+      bgColor: "bg-[#FEE500]",
+      textColor: "text-gray-800",
+      hoverColor: "hover:bg-[#FDD800]",
       borderColor: "",
       iconBox: "",
-      customButton: false
+      customButton: false,
     },
   ];
 
-  const handleLocalLogin = () => {
-    // 로그인 로직
-    if (handleLogin) {
-      handleLogin("credentials");
+  useEffect(() => {
+    if (searchParams.has("error")) {
+      setLoginErrorMessage(AuthErrorMessage.USER_NOT_FOUND);
+      loginEmailRef.current?.focus();
     }
+  }, [searchParams]);
+
+  /** 이메일 로그인 */
+  const handleLocalLogin = async () => {
+    setLoginErrorMessage("");
+
+    if (!loginEmail) {
+      loginEmailRef.current?.focus();
+      setLoginErrorMessage(AuthErrorMessage.EMAIL_REQUIRED);
+      return;
+    }
+
+    if (!loginPassword) {
+      loginPasswordRef.current?.focus();
+      setLoginErrorMessage(AuthErrorMessage.PASSWORD_REQUIRED);
+      return;
+    }
+
+    signIn("credentials", { email: loginEmail, password: loginPassword });
   };
 
+  /** 소셜 로그인 */
   const handleSocialLogin = (provider: string) => {
+    // todo 소셜 로그인 로직 작성
     if (handleLogin) {
       handleLogin(provider);
     }
   };
 
-  const handleSignup = () => {
-    // 회원가입 로직
+  /** 회원가입 */
+  const handleSignup = async () => {
+    setSignupErrorMessage("");
+    setSuccessfulSignup(false);
+
+    if (!nickname) {
+      nicknameRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.NICKNAME_REQUIRED);
+      return;
+    }
+
+    if (nickname.length < 2) {
+      nicknameRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.NICKNAME_TOO_SHORT);
+      return;
+    }
+
+    if (!signupEmail) {
+      signupEmailRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.EMAIL_REQUIRED);
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9]([a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(signupEmail)) {
+      signupEmailRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.INVALID_EMAIL);
+      return;
+    }
+
+    if (!signupPassword) {
+      signupPasswordRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.PASSWORD_REQUIRED);
+      return;
+    }
+
+    if (signupPassword.length < 6) {
+      signupPasswordRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.PASSWORD_TOO_SHORT);
+      return;
+    }
+
+    if (!signupPassword) {
+      signupPasswordRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.PASSWORD_REQUIRED);
+      return;
+    }
+
+    if (signupPassword.length < 6) {
+      signupPasswordRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.PASSWORD_TOO_SHORT);
+      return;
+    }
+
+    if (!phoneNumber) {
+      phoneNumberRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.PHONE_NUMBER_REQUIRED);
+      return;
+    }
+
+    if (!/^010\d{8}$/.test(phoneNumber)) {
+      phoneNumberRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.INVALID_PHONE_NUMBER);
+      return;
+    }
+
+    if (!termsAccepted) {
+      termsAcceptedRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.TERMS_ACCEPTED);
+      return;
+    }
+
+    if (!privacyAccepted) {
+      privacyAcceptedRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.PRIVACY_ACCEPTED);
+      return;
+    }
+
+    try {
+      const res = await signUp(nickname, signupEmail, signupPassword, phoneNumber);
+      if (res.code === "SU") {
+        setNickname("");
+        setSignupEmail("");
+        setSignupPassword("");
+        setPhoneNumber("");
+        setTermsAccepted(false);
+        setPrivacyAccepted(false);
+        setIsLoginTab(true);
+        setSuccessfulSignup(true);
+      }
+    } catch {
+      signupEmailRef.current?.focus();
+      setSignupErrorMessage(AuthErrorMessage.DUPLICATE_EMAIL);
+    }
   };
 
   const allAccepted = termsAccepted && privacyAccepted;
@@ -91,9 +254,7 @@ export default function Login({ handleLogin }: LoginProps) {
     <div className="w-dvw md:w-[500px] bg-white md:rounded-2xl max-md:h-dvh shadow-lg overflow-hidden">
       {/* 헤더 */}
       <div className="flex items-center justify-between px-8 pt-6 pb-4 border-b border-gray-200">
-        <h2 className="text-xl font-bold text-gray-800">
-          {isLoginTab ? "로그인" : "회원가입"}
-        </h2>
+        <h2 className="text-xl font-bold text-gray-800">{isLoginTab ? "로그인" : "회원가입"}</h2>
         <button
           className="text-rose-500 bg-white font-medium transition-colors duration-200 text-sm px-4 py-2 rounded-full hover:bg-gray-50 border border-gray-200"
           onClick={() => setIsLoginTab(!isLoginTab)}
@@ -108,25 +269,33 @@ export default function Login({ handleLogin }: LoginProps) {
             {/* 이메일 로그인 */}
             <div className="space-y-4">
               <div>
-                <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+                <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  이메일
+                </label>
                 <input
+                  ref={loginEmailRef}
                   id="login-email"
                   type="email"
                   placeholder="이메일 주소를 입력하세요"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleLocalLogin()}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
                 />
               </div>
               <div>
-                <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
+                <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">
+                  비밀번호
+                </label>
                 <div className="relative">
                   <input
+                    ref={loginPasswordRef}
                     id="login-password"
                     type={showLoginPassword ? "text" : "password"}
                     placeholder="비밀번호를 입력하세요"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleLocalLogin()}
                     className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
                   />
                   <button
@@ -139,19 +308,21 @@ export default function Login({ handleLogin }: LoginProps) {
                   </button>
                 </div>
               </div>
-              
+
               <div className="flex justify-end mt-1">
                 <button className="text-sm text-gray-600 hover:text-rose-500 border-none bg-transparent">
                   비밀번호를 잊으셨나요?
                 </button>
               </div>
-              
+
               <button
                 onClick={handleLocalLogin}
                 className="w-full bg-rose-500 hover:bg-rose-600 text-white font-medium py-3 rounded-lg shadow-sm transition-colors duration-200 border-0"
               >
                 로그인
               </button>
+
+              <p className="text-xs text-rose-500">{loginErrorMessage}</p>
             </div>
 
             {/* 구분선 */}
@@ -166,16 +337,18 @@ export default function Login({ handleLogin }: LoginProps) {
               {oauthItems.map((item) => (
                 <button
                   key={item.title}
-                  className={`${!item.customButton ? `${item.bgColor} ${item.textColor} ${item.hoverColor} ${item.borderColor} flex items-center justify-center gap-3` : `${item.hoverColor} ${item.borderColor} flex justify-center`} w-full h-12 rounded-lg font-medium transition-colors duration-200 overflow-hidden border-none`}
+                  className={`${
+                    !item.customButton
+                      ? `${item.bgColor} ${item.textColor} ${item.hoverColor} ${item.borderColor} flex items-center justify-center gap-3`
+                      : `${item.hoverColor} ${item.borderColor} flex justify-center`
+                  } w-full h-12 rounded-lg font-medium transition-colors duration-200 overflow-hidden border-none`}
                   onClick={() => handleSocialLogin(item.title.toLowerCase())}
                 >
                   {item.customButton ? (
                     item.svg
                   ) : (
                     <>
-                      <span className={`flex items-center justify-center ${item.iconBox || ''}`}>
-                        {item.svg}
-                      </span>
+                      <span className={`flex items-center justify-center ${item.iconBox || ""}`}>{item.svg}</span>
                       <span>{`${item.title}로 계속하기`}</span>
                     </>
                   )}
@@ -188,38 +361,50 @@ export default function Login({ handleLogin }: LoginProps) {
             {/* 회원가입 입력 필드 */}
             <div className="space-y-4">
               <div>
-                <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-1">닉네임</label>
+                <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-1">
+                  닉네임
+                </label>
                 <input
+                  ref={nicknameRef}
                   id="nickname"
                   type="text"
                   placeholder="2자 이상의 닉네임"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSignup()}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+                <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  이메일
+                </label>
                 <input
+                  ref={signupEmailRef}
                   id="signup-email"
                   type="email"
                   placeholder="이메일 주소"
                   value={signupEmail}
                   onChange={(e) => setSignupEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSignup()}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
+                <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-1">
+                  비밀번호
+                </label>
                 <div className="relative">
                   <input
+                    ref={signupPasswordRef}
                     id="signup-password"
                     type={showSignupPassword ? "text" : "password"}
                     placeholder="6자 이상의 비밀번호"
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSignup()}
                     className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
                   />
                   <button
@@ -232,30 +417,36 @@ export default function Login({ handleLogin }: LoginProps) {
                   </button>
                 </div>
               </div>
-              
+
               <div>
-                <label htmlFor="phone-number" className="block text-sm font-medium text-gray-700 mb-1">전화번호</label>
+                <label htmlFor="phone-number" className="block text-sm font-medium text-gray-700 mb-1">
+                  전화번호
+                </label>
                 <input
+                  ref={phoneNumberRef}
                   id="phone-number"
                   type="tel"
                   placeholder="숫자만 입력 (01012345678)"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSignup()}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all appearance-none"
                 />
               </div>
-              
+
               {/* 약관 동의 체크박스 */}
               <div className="space-y-2 mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center gap-2">
                   <input
+                    ref={termsAcceptedRef}
                     type="checkbox"
                     id="terms"
                     checked={termsAccepted}
                     onChange={() => setTermsAccepted(!termsAccepted)}
-                    className="w-4 h-4 accent-rose-500 rounded"
+                    onKeyDown={(e) => e.key === "Enter" && handleSignup()}
+                    className="w-4 h-4 accent-rose-500 rounded cursor-pointer"
                   />
-                  <label htmlFor="terms" className="text-gray-700">
+                  <label htmlFor="terms" className="text-gray-700 cursor-pointer">
                     <button
                       type="button"
                       onClick={() => setIsTermsModalOpen(true)}
@@ -266,16 +457,18 @@ export default function Login({ handleLogin }: LoginProps) {
                     에 동의합니다 (필수)
                   </label>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <input
+                    ref={privacyAcceptedRef}
                     type="checkbox"
                     id="privacy"
                     checked={privacyAccepted}
                     onChange={() => setPrivacyAccepted(!privacyAccepted)}
-                    className="w-4 h-4 accent-rose-500 rounded"
+                    onKeyDown={(e) => e.key === "Enter" && handleSignup()}
+                    className="w-4 h-4 accent-rose-500 rounded cursor-pointer"
                   />
-                  <label htmlFor="privacy" className="text-gray-700">
+                  <label htmlFor="privacy" className="text-gray-700 cursor-pointer">
                     <button
                       type="button"
                       onClick={() => setIsPrivacyModalOpen(true)}
@@ -287,18 +480,20 @@ export default function Login({ handleLogin }: LoginProps) {
                   </label>
                 </div>
               </div>
-              
+
               <button
                 onClick={handleSignup}
                 disabled={!allAccepted}
                 className={`w-full mt-4 font-medium py-3 rounded-lg shadow-sm transition-all duration-200 border-0 ${
-                  allAccepted 
-                    ? "bg-rose-500 hover:bg-rose-600 text-white" 
+                  allAccepted
+                    ? "bg-rose-500 hover:bg-rose-600 text-white"
                     : "bg-gray-200 text-gray-500 cursor-not-allowed"
                 }`}
               >
                 회원가입
               </button>
+
+              <p className="text-xs text-rose-500">{signupErrorMessage}</p>
             </div>
           </>
         )}
@@ -306,7 +501,7 @@ export default function Login({ handleLogin }: LoginProps) {
 
       {/* 약관 모달 */}
       {isTermsModalOpen && (
-        <TermsModal 
+        <TermsModal
           isOpen={isTermsModalOpen}
           onClose={() => setIsTermsModalOpen(false)}
           onAccept={() => {
