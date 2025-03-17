@@ -4,6 +4,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import "../styles/home.css";
 import { NextAuthProvider } from "@/components/providers/NextAuthProvider";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,6 +27,7 @@ export default function RootLayout({
         <NextAuthProvider>
           {children}
           {modal}
+          <ToastContainer />
         </NextAuthProvider>
       </body>
     </html>

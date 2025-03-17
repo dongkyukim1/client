@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface Props {
   children: React.ReactNode;
@@ -9,6 +10,14 @@ interface Props {
 // 모달 외부 영역을 어둡게 처리하고 클릭시 뒤로가기
 export default function Layout({ children }: Props) {
   const router = useRouter();
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") router.back();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [router]);
 
   return (
     <>
