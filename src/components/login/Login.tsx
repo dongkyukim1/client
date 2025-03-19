@@ -18,7 +18,17 @@ interface LoginProps {
 }
 
 export default function Login({ handleLogin }: LoginProps) {
-  const searchParams = useSearchParams();
+  // 테스트 환경에서는 useSearchParams가 undefined일 수 있음
+  let searchParams;
+  try {
+    searchParams = useSearchParams();
+  } catch (e) {
+    // 테스트 환경에서는 빈 객체로 대체
+    searchParams = {
+      get: () => null,
+      has: () => false
+    };
+  }
 
   // 탭 전환
   const [isLoginTab, setIsLoginTab] = useState(true);
