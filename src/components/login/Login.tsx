@@ -152,7 +152,25 @@ export default function Login({ handleLogin }: LoginProps) {
       return;
     }
 
-    signIn("credentials", { email: loginEmail, password: loginPassword });
+    try {
+      console.log("로그인 시도:", { email: loginEmail, password: loginPassword });
+      const result = await signIn("credentials", { 
+        email: loginEmail, 
+        password: loginPassword,
+        redirect: false
+      });
+      
+      console.log("로그인 결과:", result);
+      
+      if (result?.error) {
+        setLoginErrorMessage(AuthErrorMessage.USER_NOT_FOUND);
+      } else if (result?.ok) {
+        window.location.href = "/dashboard";
+      }
+    } catch (error) {
+      console.error("로그인 오류:", error);
+      setLoginErrorMessage(AuthErrorMessage.USER_NOT_FOUND);
+    }
   };
 
   /** 소셜 로그인 */

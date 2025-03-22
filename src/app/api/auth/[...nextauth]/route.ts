@@ -21,10 +21,25 @@ const handler = NextAuth({
             body: JSON.stringify(credentials),
             headers: { "Content-Type": "application/json" }
           });
-          if (!res.ok) throw new Error("Invalid credentials");
-          const user = await res.json().catch(() => null);
-          if (!user) throw new Error("Server returned an empty response")
-          return user;
+          
+          if (!res.ok) {
+            console.error("Login failed with status:", res.status);
+            throw new Error("Invalid credentials");
+          }
+          
+          const user = await res.json();
+          console.log("Login response:", user);
+          
+          if (!user) throw new Error("Server returned an empty response");
+          
+          // 서버 응답 형식에 맞게 사용자 객체 구성
+          return {
+            id: user.memberId || user.id || "1",
+            email: user.email,
+            name: user.nickname || user.name,
+            accessToken: user.accessToken,
+            refreshToken: user.refreshToken
+          };
         } catch (error) {
           console.error("Login error:", error);
           return null;
@@ -48,15 +63,29 @@ const handler = NextAuth({
     signIn: "/login",
   },
   debug: process.env.NODE_ENV === 'development',
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30일
+  },
   callbacks: {
     async redirect({ url, baseUrl }) {
       // 로그인 성공 후 대시보드로 리다이렉션
       return `${baseUrl}/dashboard`;
     },
-    async session({ session, token, user }) {
+    async session({ session, token }) {
+      if (token) {
+        session.user.accessToken = token.accessToken;
+        session.user.refreshToken = token.refreshToken;
+        session.user.id = token.id;
+      }
       return session;
     },
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user, account }) {
+      if (user) {
+        token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
+        token.id = user.id;
+      }
       return token;
     },
   },
