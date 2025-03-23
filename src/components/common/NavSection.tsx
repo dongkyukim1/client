@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
+import Button from "@/components/common/Button";
 
 export default function NavSection() {
   const router = useRouter();
@@ -50,9 +51,13 @@ export default function NavSection() {
                   className="w-full text-sm focus:outline-none border-none"
                 />
               </div>
-              <button className="ml-2 bg-pink-500 text-white p-2 rounded-full hover:bg-pink-600 transition-colors border-none">
+              <Button 
+                variant="primary"
+                size="sm"
+                className="ml-2 rounded-full"
+              >
                 <FaSearch className="text-sm" />
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -70,24 +75,42 @@ export default function NavSection() {
           >
             인기 여행지
           </Link>
+          <Link
+            href="/reviews"
+            className="hidden md:block text-gray-600 text-sm font-medium hover:text-gray-900 px-3 py-2 rounded-full hover:bg-gray-50 transition-colors"
+          >
+            리뷰보기
+          </Link>
           <Link href="/dashboard" className="hidden md:block">
-            <button className="font-medium px-4 py-2 rounded-full transition-all duration-200 text-sm hover:bg-gray-50 border border-gray-200 hover:border-gray-300 text-gray-700">
+            <Button
+              variant="outline"
+              size="sm"
+              className="font-medium"
+            >
               AI 여행 계획
-            </button>
+            </Button>
           </Link>
 
           <Link href="/dashboard" className="md:hidden">
-            <button className="bg-pink-500 text-white font-medium px-3 py-2 rounded-full text-xs">AI 여행</button>
+            <Button
+              variant="primary"
+              size="sm"
+              className="text-xs"
+            >
+              AI 여행
+            </Button>
           </Link>
 
-          <button
-            className="ml-1 flex items-center gap-2 text-gray-600 border border-gray-200 hover:border-gray-300 hover:shadow-sm px-3 py-2 rounded-full hover:bg-gray-50 transition-all duration-200"
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-1 flex items-center gap-2"
             onClick={handleLoginClick}
             aria-label={session?.user ? "로그아웃" : "로그인"}
           >
             <FaUserCircle className="text-gray-500" />
             <span className="hidden md:block text-sm font-medium">{session?.user ? "로그아웃" : "로그인"}</span>
-          </button>
+          </Button>
         </div>
       </div>
     </header>

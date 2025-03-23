@@ -1,11 +1,16 @@
-import NextAuth from "next-auth";
+import NextAuth from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
 import NaverProvider from "next-auth/providers/naver";
 import KakaoProvider from "next-auth/providers/kakao";
-import CredentialsProvider from "next-auth/providers/credentials"
+import CredentialsProvider from "next-auth/providers/credentials";
+import type { User as NextAuthUser } from "next-auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
+/**
+ * NextAuth 설정
+ * @see https://next-auth.js.org/configuration/options
+ */
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
@@ -68,27 +73,29 @@ const handler = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // 30일
   },
   callbacks: {
-    async redirect({ url, baseUrl }) {
+    async redirect() {
       // 로그인 성공 후 대시보드로 리다이렉션
-      return `${baseUrl}/dashboard`;
+      return "/dashboard";
     },
     async session({ session, token }) {
-      if (token) {
+      if (token && session.user) {
         session.user.accessToken = token.accessToken;
         session.user.refreshToken = token.refreshToken;
         session.user.id = token.id;
       }
       return session;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
-        token.accessToken = user.accessToken;
-        token.refreshToken = user.refreshToken;
-        token.id = user.id;
+        const typedUser = user as NextAuthUser;
+        token.accessToken = typedUser.accessToken;
+        token.refreshToken = typedUser.refreshToken;
+        token.id = typedUser.id;
       }
       return token;
     },
   },
 });
 
+// 경로 핸들러 내보내기
 export { handler as GET, handler as POST }; 

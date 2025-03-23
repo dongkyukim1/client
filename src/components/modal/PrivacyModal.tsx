@@ -10,11 +10,9 @@ interface PrivacyModalProps {
 }
 
 export default function PrivacyModal({ isOpen, onClose, onAccept }: PrivacyModalProps) {
-  if (!isOpen) return null;
-  
   return (
     <Modal
-      isOpen={true}
+      isOpen={isOpen}
       onClose={onClose}
       title="개인정보처리방침"
     >

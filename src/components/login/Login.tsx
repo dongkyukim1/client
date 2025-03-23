@@ -19,16 +19,23 @@ interface LoginProps {
 
 export default function Login({ handleLogin }: LoginProps) {
   // 테스트 환경에서는 useSearchParams가 undefined일 수 있음
-  let searchParams;
-  try {
-    searchParams = useSearchParams();
-  } catch (e) {
-    // 테스트 환경에서는 빈 객체로 대체
-    searchParams = {
-      get: () => null,
-      has: () => false
-    };
-  }
+  const searchParamsHook = useSearchParams();
+  const searchParams = {
+    get: (name: string) => {
+      try {
+        return searchParamsHook?.get(name) ?? null;
+      } catch {
+        return null;
+      }
+    },
+    has: (name: string) => {
+      try {
+        return searchParamsHook?.has(name) ?? false;
+      } catch {
+        return false;
+      }
+    }
+  };
 
   // 탭 전환
   const [isLoginTab, setIsLoginTab] = useState(true);
@@ -134,7 +141,7 @@ export default function Login({ handleLogin }: LoginProps) {
       setLoginErrorMessage(AuthErrorMessage.USER_NOT_FOUND);
       loginEmailRef.current?.focus();
     }
-  }, [searchParams]);
+  }, [searchParams, AuthErrorMessage.USER_NOT_FOUND]);
 
   /** 이메일 로그인 */
   const handleLocalLogin = async () => {

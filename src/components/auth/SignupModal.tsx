@@ -8,10 +8,17 @@ import Modal from "@/components/common/Modal";
 const TermsContent = lazy(() => import('@/components/content/TermsContent'));
 const PrivacyContent = lazy(() => import('@/components/content/PrivacyContent'));
 
+interface SignupForm {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  agreeToTerms: boolean;
+}
+
 interface SignupModalProps {
   isOpen: boolean;
   onClose: () => void;
-  handleSignup: (data: any) => void;
+  handleSignup: (data: SignupForm) => void;
   handleSocialSignup: (provider: string) => void;
 }
 
@@ -24,7 +31,7 @@ export default function SignupModal({
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [termsPreloaded, setTermsPreloaded] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SignupForm>({
     email: '',
     password: '',
     confirmPassword: '',
@@ -44,7 +51,8 @@ export default function SignupModal({
   // 마우스가 버튼 위로 올라가면 컴포넌트 미리 로드
   const handleTermsHover = () => {
     if (!termsPreloaded) {
-      const preload = import('@/components/content/TermsContent');
+      // Terms 컴포넌트 사전 로드
+      import('@/components/content/TermsContent');
       setTermsPreloaded(true);
     }
   };
@@ -63,135 +71,133 @@ export default function SignupModal({
     handleSignup(formData);
   };
 
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">회원가입</h2>
-          <button 
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            &times;
-          </button>
+  const signupContent = (
+    <div className="w-full max-w-md">
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-medium mb-2">
+            이메일
+          </label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            required
+          />
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-medium mb-2">
-              이메일
-            </label>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-medium mb-2">
+            비밀번호
+          </label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            required
+          />
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-gray-700 text-sm font-medium mb-2">
+            비밀번호 확인
+          </label>
+          <input
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            required
+          />
+        </div>
+
+        <div className="mb-6">
+          <label className="flex items-start gap-2">
             <input
-              type="email"
-              name="email"
-              value={formData.email}
+              type="checkbox"
+              name="agreeToTerms"
+              checked={formData.agreeToTerms}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="mt-1"
               required
             />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-medium mb-2">
-              비밀번호
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              required
-            />
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-gray-700 text-sm font-medium mb-2">
-              비밀번호 확인
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              required
-            />
-          </div>
-
-          <div className="mb-6">
-            <label className="flex items-start gap-2">
-              <input
-                type="checkbox"
-                name="agreeToTerms"
-                checked={formData.agreeToTerms}
-                onChange={handleInputChange}
-                className="mt-1"
-                required
-              />
-              <span className="text-sm text-gray-700">
-                <span>
-                  <button 
-                    type="button"
-                    onMouseEnter={handleTermsHover}
-                    onClick={openTermsModal} 
-                    className={modalButtonStyle}
-                  >
-                    이용약관
-                  </button>
-                  {' '}및{' '}
-                  <button 
-                    type="button"
-                    onClick={openPrivacyModal} 
-                    className={modalButtonStyle}
-                  >
-                    개인정보처리방침
-                  </button>
-                </span>
-                {' '}에 동의합니다.
+            <span className="text-sm text-gray-700">
+              <span>
+                <button 
+                  type="button"
+                  onMouseEnter={handleTermsHover}
+                  onClick={openTermsModal} 
+                  className={modalButtonStyle}
+                >
+                  이용약관
+                </button>
+                {' '}및{' '}
+                <button 
+                  type="button"
+                  onClick={openPrivacyModal} 
+                  className={modalButtonStyle}
+                >
+                  개인정보처리방침
+                </button>
               </span>
-            </label>
-          </div>
+              {' '}에 동의합니다.
+            </span>
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
+          disabled={!formData.agreeToTerms}
+        >
+          회원가입
+        </button>
+      </form>
+
+      <div className="mt-4">
+        <div className="relative flex items-center justify-center py-3">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="flex-shrink mx-4 text-gray-500 text-sm">또는</span>
+          <div className="flex-grow border-t border-gray-300"></div>
+        </div>
+
+        <div className="space-y-3">
+          <button
+            type="button"
+            className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            onClick={() => handleSocialSignup("google")}
+          >
+            <FaGoogle className="text-red-500" />
+            <span>Google로 회원가입</span>
+          </button>
 
           <button
-            type="submit"
-            className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
-            disabled={!formData.agreeToTerms}
+            type="button"
+            className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            onClick={() => handleSocialSignup("github")}
           >
-            회원가입
+            <FaGithub />
+            <span>GitHub로 회원가입</span>
           </button>
-        </form>
-
-        <div className="mt-4">
-          <div className="relative flex items-center justify-center py-3">
-            <div className="flex-grow border-t border-gray-300"></div>
-            <span className="flex-shrink mx-4 text-gray-500 text-sm">또는</span>
-            <div className="flex-grow border-t border-gray-300"></div>
-          </div>
-
-          <div className="space-y-3">
-            <button
-              type="button"
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              onClick={() => handleSocialSignup("google")}
-            >
-              <FaGoogle className="text-red-500" />
-              <span>Google로 회원가입</span>
-            </button>
-
-            <button
-              type="button"
-              className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              onClick={() => handleSocialSignup("github")}
-            >
-              <FaGithub />
-              <span>GitHub로 회원가입</span>
-            </button>
-          </div>
         </div>
       </div>
+    </div>
+  );
+
+  return (
+    <>
+      <Modal 
+        isOpen={isOpen} 
+        onClose={onClose}
+        title="회원가입"
+      >
+        {signupContent}
+      </Modal>
 
       {/* 이용약관 모달 */}
       {isTermsModalOpen && (
@@ -218,6 +224,6 @@ export default function SignupModal({
           </Suspense>
         </Modal>
       )}
-    </div>
+    </>
   );
 } 

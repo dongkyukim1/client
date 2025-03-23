@@ -6,6 +6,8 @@ import "../styles/home.css";
 import { NextAuthProvider } from "@/components/providers/NextAuthProvider";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import KakaoScript from '@/components/KakaoScript';
+// Kakao 타입은 자체 타입 파일에 정의되어 있습니다
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,6 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
+      <head>
+        <KakaoScript />
+      </head>
       <body className={inter.className}>
         <NextAuthProvider>
           {children}
