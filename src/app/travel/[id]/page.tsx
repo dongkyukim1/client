@@ -48,11 +48,23 @@ export default function TravelPlanDetail(props: { params: Promise<{ id: string }
     const fetchPlan = async () => {
       try {
         setLoading(true);
-        // 실제로는 API에서 데이터를 가져올 것입니다.
-        // const response = await fetch(`/api/travel/${params.id}`);
-        // const data = await response.json();
         
-        // 이 예시에서는 모의 데이터를 사용합니다.
+        // localStorage에서 여행 계획 가져오기
+        if (typeof window !== 'undefined') {
+          const savedPlansJSON = localStorage.getItem('travelPlans');
+          
+          if (savedPlansJSON) {
+            const savedPlans = JSON.parse(savedPlansJSON);
+            const currentPlan = savedPlans.find((p: any) => p.id === params.id);
+            
+            if (currentPlan) {
+              setPlan(currentPlan);
+              return;
+            }
+          }
+        }
+        
+        // localStorage에 없는 경우 모의 데이터 사용 (실제로는 API 호출 대체)
         const mockPlan: TravelPlan = {
           id: params.id,
           destination: '도쿄',

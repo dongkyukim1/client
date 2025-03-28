@@ -17,16 +17,21 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        const res = await authApi.login(credentials)
-        if (res.code !== "SU") return null;
-        const accessToken = jwtDecode(res.accessToken)
-        const sub = JSON.parse(accessToken.sub as string)
-        return {
-          id: sub.email,
-          email: sub.email,
-          name: sub.nickname,
-          image: sub.url,
-          accessToken: res.accessToken
+        try {
+          const res = await authApi.login(credentials);
+          if (res.code !== "SU") return null;
+          const accessToken = jwtDecode(res.accessToken);
+          const sub = JSON.parse(accessToken.sub as string);
+          return {
+            id: sub.email,
+            email: sub.email,
+            name: sub.nickname,
+            image: sub.url,
+            accessToken: res.accessToken
+          };
+        } catch (error) {
+          console.error("Login error:", error);
+          return null;
         }
       }
     }),
@@ -65,8 +70,11 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (token.user) {
-        session.user = token.user;
+      if (token.accessToken) {
+        session.user = {
+          ...session.user,
+          accessToken: token.accessToken as string
+        };
       }
       return session;
     },

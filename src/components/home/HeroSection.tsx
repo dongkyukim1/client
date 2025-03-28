@@ -4,6 +4,9 @@ import { useState } from 'react'
 import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaUser } from 'react-icons/fa'
 import { useRouter } from 'next/navigation'
 
+// 지원되는 여행지 목록
+const SUPPORTED_LOCATIONS = ['제주도', '강릉', '부산', '여수', '경주', '전주', '속초', '울산'];
+
 export default function HeroSection() {
   const [location, setLocation] = useState('')
   const [adults, setAdults] = useState('2')
@@ -14,17 +17,32 @@ export default function HeroSection() {
   const router = useRouter()
   
   const handleSearch = () => {
-    if (!location) return;
+    if (!location) {
+      alert('여행지를 입력해주세요.');
+      return;
+    }
+    
+    // 지원되는 여행지인지 확인
+    if (!SUPPORTED_LOCATIONS.includes(location)) {
+      alert('지원되는 여행지가 아닙니다. 현재 지원되는 여행지는 제주도, 강릉, 부산, 여수, 경주, 전주, 속초, 울산입니다.');
+      return;
+    }
+    
+    // 날짜 입력이 없으면 현재 날짜 기준으로 설정
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const formattedToday = today.toISOString().split('T')[0];
+    const formattedTomorrow = tomorrow.toISOString().split('T')[0];
     
     const params = new URLSearchParams({
       location,
-      adults,
-      children,
-      startDate,
-      endDate
+      startDate: startDate || formattedToday,
+      endDate: endDate || formattedTomorrow
     });
     
-    router.push(`/search?${params.toString()}`);
+    router.push(`/travel/create?${params.toString()}`);
   };
   
   return (
@@ -61,7 +79,23 @@ export default function HeroSection() {
             
             <div className="mt-6 md:hidden">
               <button 
-                onClick={() => document.querySelector('.search-panel')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => {
+                  // 기본 여행 정보로 여행 계획 페이지 이동
+                  const today = new Date();
+                  const tomorrow = new Date(today);
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  
+                  const formattedToday = today.toISOString().split('T')[0];
+                  const formattedTomorrow = tomorrow.toISOString().split('T')[0];
+                  
+                  const params = new URLSearchParams({
+                    location: '제주도', // 기본 여행지
+                    startDate: formattedToday,
+                    endDate: formattedTomorrow
+                  });
+                  
+                  router.push(`/travel/create?${params.toString()}`);
+                }}
                 className="bg-white text-rose-500 hover:bg-gray-100 font-medium px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
               >
                 여행 계획 시작하기

@@ -3,10 +3,21 @@ import { Resume, CreateResumeRequest, UpdateResumeRequest } from '@/types';
 import { getSession, signOut } from 'next-auth/react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const FASTAPI_URL = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_URL,
 });
+
+// FastAPI 클라이언트
+const fastapiClient = axios.create({
+  baseURL: FASTAPI_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+console.log('FastAPI URL:', FASTAPI_URL);
 
 // Request interceptor for adding auth token
 api.interceptors.request.use(async (config) => {
@@ -32,6 +43,24 @@ export const resumeApi = {
 
   update: (id: number, data: UpdateResumeRequest) =>
     api.put<Resume>(`/api/resumes/${id}`, data),
+};
+
+// 여행 추천 API
+export const recommendationApi = {
+  getTravelRecommendations: (areaCode: string, sigunguCode: string, categories: string[], days: number) => {
+    console.log('Sending recommendation request:', {
+      area_code: areaCode,
+      sigungu_code: sigunguCode,
+      category_codes: categories,
+      days: days
+    });
+    return fastapiClient.post('/api/v1/recommendations/', {
+      area_code: areaCode,
+      sigungu_code: sigunguCode,
+      category_codes: categories,
+      days: days
+    });
+  },
 };
 
 export const authApi = {
