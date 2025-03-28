@@ -2,7 +2,8 @@
 
 import React, { useEffect, useRef } from "react";
 import { IoIosClose } from "react-icons/io";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
@@ -35,7 +36,8 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
 
   if (!isOpen) return null;
 
-  return (
+  // Portal을 사용하여 모달 렌더링
+  const modalContent = (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={handleBackdropClick}
@@ -65,4 +67,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
       </motion.div>
     </div>
   );
+
+  // Modal root 요소에 포털로 렌더링
+  return typeof window !== 'undefined' ? createPortal(modalContent, document.body) : null;
 } 

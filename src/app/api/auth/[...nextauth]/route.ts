@@ -3,6 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { jwtDecode } from "jwt-decode";
 import { authApi } from "@/services/api";
 
+/**
+ * NextAuth 설정
+ * @see https://next-auth.js.org/configuration/options
+ */
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
@@ -49,6 +53,10 @@ const handler = NextAuth({
     signIn: "/login",
   },
   debug: process.env.NODE_ENV === 'development',
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30일
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user?.accessToken) {
@@ -68,4 +76,5 @@ const handler = NextAuth({
   },
 });
 
-export { handler as GET, handler as POST }; 
+// 경로 핸들러 내보내기
+export { handler as GET, handler as POST };

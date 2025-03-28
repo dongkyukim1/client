@@ -15,6 +15,7 @@ import { authApi } from "@/services/api";
 
 export default function Login() {
   // 테스트 환경에서는 useSearchParams가 undefined일 수 있음
+
   let searchParams;
   try {
     searchParams = useSearchParams();
@@ -25,6 +26,7 @@ export default function Login() {
       has: () => false,
     };
   }
+
 
   const router = useRouter();
 
@@ -147,7 +149,7 @@ export default function Login() {
       setLoginErrorMessage(AuthErrorMessage.USER_NOT_FOUND);
       loginEmailRef.current?.focus();
     }
-  }, [searchParams]);
+  }, [searchParams, AuthErrorMessage.USER_NOT_FOUND]);
 
   /** 이메일 입력 검증 로직 */
   const validateEmailInput = () => {
@@ -186,24 +188,25 @@ export default function Login() {
     }
   };
 
-  /** 이메일 로그인 */
-  const handleLocalLogin = async () => {
-    setLoginErrorMessage("");
+/** 이메일 로그인 */
+const handleLocalLogin = async () => {
+  setLoginErrorMessage("");
 
-    if (!loginEmail) {
-      loginEmailRef.current?.focus();
-      setLoginErrorMessage(AuthErrorMessage.EMAIL_REQUIRED);
-      return;
-    }
+  if (!loginEmail) {
+    loginEmailRef.current?.focus();
+    setLoginErrorMessage(AuthErrorMessage.EMAIL_REQUIRED);
+    return;
+  }
 
-    if (!loginPassword) {
-      loginPasswordRef.current?.focus();
-      setLoginErrorMessage(AuthErrorMessage.PASSWORD_REQUIRED);
-      return;
-    }
+  if (!loginPassword) {
+    loginPasswordRef.current?.focus();
+    setLoginErrorMessage(AuthErrorMessage.PASSWORD_REQUIRED);
+    return;
+  }
 
-    signIn("email", { email: loginEmail, password: loginPassword });
-  };
+  signIn("email", { email: loginEmail, password: loginPassword });
+};
+
 
   /** 소셜 로그인 */
   const handleSocialLogin = (provider: string) => {

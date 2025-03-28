@@ -10,11 +10,9 @@ interface TermsModalProps {
 }
 
 export default function TermsModal({ isOpen, onClose, onAccept }: TermsModalProps) {
-  if (!isOpen) return null;
-  
   return (
     <Modal
-      isOpen={true}
+      isOpen={isOpen}
       onClose={onClose}
       title="이용약관"
     >

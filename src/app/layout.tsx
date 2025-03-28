@@ -8,6 +8,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { MSWProvider } from "@/components/providers/MSWProvider";
 
+
 const inter = Inter({ subsets: ["latin"] });
 
 if (process.env.NEXT_PUBLIC_API_MOCKING === "true") {
@@ -30,6 +31,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
+      <head>
+        <KakaoScript />
+      </head>
       <body className={inter.className}>
         <MSWProvider>
           <NextAuthProvider>

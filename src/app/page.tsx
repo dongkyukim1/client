@@ -6,7 +6,9 @@ import HeroSection from '@/components/home/HeroSection'
 import RegionSection from '@/components/home/RegionSection'
 import FeatureSection from '@/components/home/FeatureSection'
 import FestivalSection from '@/components/home/FestivalSection'
+import ReviewsSection from '@/components/home/ReviewsSection'
 import Head from 'next/head'
+import Link from 'next/link'
 
 export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
@@ -47,7 +49,8 @@ export default function Home() {
     setBudget(value);
   }
   
-  // 드래그 시작 핸들러
+  // 드래그 시작 핸들러 (슬라이더 ref에서 직접 사용)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleDragStart = (e: React.MouseEvent) => {
     setIsDragging(true);
     handleDrag(e);
@@ -141,6 +144,10 @@ export default function Home() {
       <HeroSection />
       <RegionSection onFilterClick={handleFilterClick} />
       <FeatureSection />
+      
+      {/* 여행 리뷰 섹션 */}
+      <ReviewsSection />
+      
       <FestivalSection />
 
       {/* 필터 모달 - Tailwind CSS 사용 */}
@@ -283,7 +290,11 @@ export default function Home() {
                   <div className="py-6 px-4">
                     <div className="relative">
                       {/* 슬라이더 트랙 */}
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-2 bg-gray-200 rounded-full overflow-hidden"
+                        ref={sliderRef}
+                        onMouseDown={handleDragStart}
+                      >
                         {/* 채워진 부분 */}
                         <div 
                           className="h-full bg-gradient-to-r from-pink-400 to-pink-500 rounded-full" 
@@ -356,6 +367,18 @@ export default function Home() {
           </div>
         </div>
       )}
+      <Link
+        href="/dashboard"
+        className="bg-main hover:bg-main-hover text-white p-4 rounded-lg max-w-xs w-full text-center text-lg font-semibold transition-all hover:shadow-lg"
+      >
+        시작하기
+      </Link>
+      <Link
+        href="/reviews"
+        className="bg-white/20 hover:bg-white/30 text-white border border-white/30 p-4 rounded-lg max-w-xs w-full text-center text-lg font-semibold transition-all hover:shadow-lg"
+      >
+        여행 리뷰 보기
+      </Link>
     </Layout>
   )
 }

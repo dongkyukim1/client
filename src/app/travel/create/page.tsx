@@ -164,7 +164,7 @@ export default function CreateTravelPlan() {
                   ))}
                 </div>
                 
-                <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
                   {/* 스텝 1: 여행지 */}
                   {step === 0 && (
                     <div>
@@ -207,7 +207,7 @@ export default function CreateTravelPlan() {
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">출발일</label>
                           <input
-                            type="date"
+                          type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -216,7 +216,7 @@ export default function CreateTravelPlan() {
                         <div>
                           <label className="block text-sm text-gray-600 mb-1">도착일</label>
                           <input
-                            type="date"
+                          type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
