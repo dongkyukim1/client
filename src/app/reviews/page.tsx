@@ -2,9 +2,8 @@ import { Suspense } from 'react';
 import { getReviews } from '@/services/reviewService';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import ReviewCard from '@/components/reviews/ReviewCard';
-import Pagination from '@/components/common/Pagination';
-import { FaPlus } from 'react-icons/fa';
+import CreateReviewButton from '@/components/reviews/CreateReviewButton';
+import { ReviewsWrapper, ReviewsError } from '@/components/reviews/ReviewsClientWrapper';
 
 // 메타데이터 설정
 export const metadata: Metadata = {
@@ -26,52 +25,10 @@ export const metadata: Metadata = {
 async function ReviewsList({ page, pageSize }: { page: number, pageSize: number }) {
   try {
     const data = await getReviews({ page, pageSize });
-    
-    if (data.reviews.length === 0) {
-      return (
-        <div className="text-center py-20">
-          <h3 className="text-xl font-medium text-gray-600">등록된 리뷰가 없습니다</h3>
-          <p className="mt-4 text-gray-500">첫 번째 여행 리뷰를 작성해보세요!</p>
-          <div className="mt-8">
-            <Link 
-              href="/travel/create" 
-              className="inline-flex items-center px-6 py-3 bg-pink-500 text-white rounded-lg shadow-md hover:bg-pink-600 transition-colors"
-            >
-              <FaPlus className="mr-2" />
-              <span>리뷰 작성하기</span>
-            </Link>
-          </div>
-        </div>
-      );
-    }
-    
-    return (
-      <>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data.reviews.map((review) => (
-            <div key={review.id}>
-              <ReviewCard review={review} />
-            </div>
-          ))}
-        </div>
-        
-        <div className="mt-10 flex justify-center">
-          <Pagination 
-            currentPage={page} 
-            totalPages={Math.ceil(data.totalCount / pageSize)} 
-            baseUrl="/reviews"
-          />
-        </div>
-      </>
-    );
+    return <ReviewsWrapper reviews={data.reviews} totalCount={data.totalCount} page={page} pageSize={pageSize} />;
   } catch (error) {
     console.error('리뷰 목록을 불러올 수 없습니다:', error);
-    return (
-      <div className="text-center py-20">
-        <h3 className="text-xl font-medium text-red-600">오류가 발생했습니다</h3>
-        <p className="mt-4 text-gray-500">리뷰 목록을 불러오는 중 문제가 발생했습니다. 다시 시도해주세요.</p>
-      </div>
-    );
+    return <ReviewsError />;
   }
 }
 
@@ -83,13 +40,12 @@ interface ReviewsPageProps {
 }
 
 export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
-  // searchParams를 비동기적으로 처리하기 위해 props를 await
-  const resolvedSearchParams = await Promise.resolve(searchParams);
+  // searchParams를 await 처리
+  const resolvedParams = await Promise.resolve(searchParams);
   
-  // URL 파라미터에서 페이지와 페이지 크기 가져오기 (기본값 설정)
-  const page = resolvedSearchParams.page ? parseInt(resolvedSearchParams.page) : 1;
-  const pageSize = resolvedSearchParams.pageSize ? parseInt(resolvedSearchParams.pageSize) : 9;
-  
+  const page = resolvedParams.page ? parseInt(resolvedParams.page) : 1;
+  const pageSize = resolvedParams.pageSize ? parseInt(resolvedParams.pageSize) : 9;
+
   return (
     <div className="bg-gray-50 min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -107,13 +63,8 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
           >
             <span>홈으로</span>
           </Link>
-          <Link 
-            href="/travel/create"
-            className="inline-flex items-center px-4 py-2 bg-pink-500 text-white rounded-lg shadow-sm hover:bg-pink-600 transition-colors"
-          >
-            <FaPlus className="mr-2" size={14} />
-            <span>리뷰 작성하기</span>
-          </Link>
+          
+          <CreateReviewButton />
         </div>
         
         <Suspense fallback={

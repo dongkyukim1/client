@@ -314,13 +314,13 @@ a {
 }
 
 .section-title {
-  font-size: 30px;
+  font-size: 32px;
   font-weight: 700;
-  margin-bottom: var(--spacing-8);
-  color: var(--gray-900);
-  font-family: 'Montserrat', var(--font-sans);
-  letter-spacing: -0.02em;
+  margin-bottom: var(--spacing-4);
+  text-align: center;
   position: relative;
+  padding-bottom: var(--spacing-4);
+  letter-spacing: -0.02em;
 }
 
 .section-title:after {
@@ -777,4 +777,313 @@ a {
 
 .horizontal-scroll-item.festival {
   width: 280px;
+}
+
+/* 다크모드에서 섹션 타이틀과 서브타이틀 색상 지정 */
+.dark .section-title {
+  color: white;
+}
+
+.dark .section-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 다크모드에서 feature 타이틀 및 설명 텍스트 색상 */
+.dark .feature-title {
+  color: white;
+}
+
+.dark .feature-description {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* 다크모드에서 festival 타이틀 및 텍스트 색상 */
+.dark .festival-title {
+  color: white;
+}
+
+.dark .festival-date,
+.dark .festival-location {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* 다크모드에서 feature 카드 배경 및 텍스트 스타일 수정 */
+.dark .feature-card {
+  background-color: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.dark .feature-icon {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.dark .feature-card:hover .feature-icon {
+  background-color: #2563eb;
+}
+
+/* 다크모드에서 festival 카드 배경 수정 */
+.dark .festival-card {
+  background-color: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* 다크모드에서 region 카드 배경 수정 */
+.dark .region-card {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.dark .region-name {
+  color: white;
+}
+
+.dark .region-card-content {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ReviewCard 스타일 수정 */
+.dark .bg-white {
+  background-color: #1f2937;
+}
+
+.dark .text-gray-600 {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dark .text-gray-500 {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* 다크모드 전체 스타일 추가 */
+body.dark-mode {
+  background-color: #111827;
+  color: white;
+}
+
+.dark body {
+  background-color: #111827;
+  color: white;
+}
+
+/* 다크모드 전체 페이지 적용 */
+.dark body,
+.dark main,
+.dark section,
+.dark div.section {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 다크모드 배경색 강제 적용 */
+.dark .bg-gray-900 {
+  background-color: #111827 !important;
+}
+
+.dark .bg-gray-800 {
+  background-color: #1f2937 !important;
+}
+
+.dark .border-gray-700 {
+  border-color: #374151 !important;
+}
+
+/* 다크모드 카드 스타일 */
+.dark .bg-white.rounded-2xl {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .text-gray-800 {
+  color: #f3f4f6 !important;
+}
+
+/* 모든 요소에 부드러운 테마 전환 애니메이션 추가 */
+*, *::before, *::after {
+  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease !important;
+}
+
+/* 테마 전환 최적화를 위해 특정 속성은 제외 */
+.no-transition, 
+.no-transition * {
+  transition: none !important;
+}
+
+/* 테마 전환시 애니메이션 적용할 요소들 */
+html, 
+body, 
+.theme-transition,
+main, 
+header, 
+footer,
+section,
+div,
+button,
+input,
+textarea,
+a,
+p,
+h1, h2, h3, h4, h5, h6,
+span,
+li,
+article,
+blockquote,
+hr,
+.card,
+.button,
+.text,
+.bg-white,
+.bg-black,
+.bg-gray-50,
+.bg-gray-100,
+.bg-gray-800,
+.bg-gray-900 {
+  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* 다크모드 전체 페이지 적용 */
+.dark body,
+.dark main,
+.dark section,
+.dark div.section {
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* 다크모드 배경색 강제 적용 */
+.dark .bg-gray-900 {
+  background-color: #111827 !important;
+}
+
+.dark .bg-gray-800 {
+  background-color: #1f2937 !important;
+}
+
+.dark .border-gray-700 {
+  border-color: #374151 !important;
+}
+
+/* 다크모드 카드 스타일 */
+.dark .bg-white.rounded-2xl {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .text-gray-800 {
+  color: #f3f4f6 !important;
+}
+
+/* 테마별 배경 스타일 명시적 정의 */
+.original body {
+  background-color: #ffffff;
+  background-image: linear-gradient(to bottom, #fbcfe8, #ffffff);
+}
+
+.light body {
+  background-color: #ffffff;
+  background-image: linear-gradient(to bottom, #dbeafe, #ffffff);
+}
+
+.dark body {
+  background-color: #111827;
+  background-image: linear-gradient(to bottom, #111827, #1f2937);
+}
+
+/* 테마별 배경 그라데이션 직접 정의 */
+.original .bg-gradient-to-b.from-pink-50.to-white {
+  background: linear-gradient(to bottom, #fbcfe8, #ffffff) !important;
+}
+
+.light .bg-gradient-to-b.from-blue-50.to-white {
+  background: linear-gradient(to bottom, #dbeafe, #ffffff) !important;
+}
+
+.dark .bg-gradient-to-b.from-gray-900.to-gray-800 {
+  background: linear-gradient(to bottom, #111827, #1f2937) !important;
+}
+
+/* 오리지널 테마 카드 스타일 강화 */
+.original .rounded-2xl {
+  border: 2px solid #fbcfe8 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.original .text-sm.font-bold.mb-3 {
+  color: #be185d !important; /* pink-700 */
+}
+
+.original .px-3.py-1.rounded-full {
+  background-color: #fdf2f8 !important; /* pink-50 */
+  color: #be185d !important; /* pink-700 */
+  border: 1px solid #fbcfe8 !important; /* pink-200 */
+}
+
+/* 라이트 테마 카드 스타일 강화 */
+.light .rounded-2xl {
+  border: 2px solid #bfdbfe !important; /* blue-200 */
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.light .text-sm.font-bold.mb-3 {
+  color: #1d4ed8 !important; /* blue-700 */
+}
+
+.light .px-3.py-1.rounded-full {
+  background-color: #eff6ff !important; /* blue-50 */
+  color: #1d4ed8 !important; /* blue-700 */
+  border: 1px solid #bfdbfe !important; /* blue-200 */
+}
+
+/* 다크 테마 카드 스타일 강화 */
+.dark .rounded-2xl {
+  border: 1px solid #374151 !important; /* gray-700 */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* 테마별 배경 스타일 명시적 정의 */
+.original body {
+  background-color: #ffffff;
+  background-image: linear-gradient(to bottom, #fbcfe8, #ffffff);
+}
+
+.light body {
+  background-color: #ffffff;
+  background-image: linear-gradient(to bottom, #dbeafe, #ffffff);
+}
+
+.dark body {
+  background-color: #111827;
+  background-image: linear-gradient(to bottom, #111827, #1f2937);
+}
+
+/* 테마별 배경 그라데이션 직접 정의 */
+.original .bg-gradient-to-b.from-pink-50.to-white {
+  background: linear-gradient(to bottom, #fbcfe8, #ffffff) !important;
+}
+
+.light .bg-gradient-to-b.from-blue-50.to-white {
+  background: linear-gradient(to bottom, #dbeafe, #ffffff) !important;
+}
+
+.dark .bg-gradient-to-b.from-gray-900.to-gray-800 {
+  background: linear-gradient(to bottom, #111827, #1f2937) !important;
+}
+
+/* 테마 전환 최적화 및 속도 개선 */
+.theme-transition {
+  transition: background-color 0.3s ease, 
+              background-image 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+/* 그라데이션 배경에 대한 트랜지션 (더 부드럽게) */
+div[class*="bg-gradient-to-b"] {
+  transition: background 0.4s ease !important;
+}
+
+/* 특정 요소 트랜지션 제어 (더 빠르게) */
+header, .card, .bg-white, .bg-gray-800, .bg-gray-900 {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
 } 

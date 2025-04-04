@@ -7,9 +7,22 @@ module.exports = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic':
+          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      },
       colors: {
+        theme: {
+          primary: 'var(--theme-primary)',
+          secondary: 'var(--theme-secondary)',
+          accent: 'var(--theme-accent)',
+          background: 'var(--theme-background)',
+          text: 'var(--theme-text)',
+        },
         primary: '#0070f3',
         secondary: '#6c757d',
         success: '#28a745',
@@ -79,6 +92,12 @@ module.exports = {
         'slide-up': 'slideUp 0.5s ease-in-out',
         'modal-in': 'modal-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         'modal-out': 'modal-out 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'scan-line': 'scan-line 2s ease-in-out infinite',
+        'modal-scale': 'modal-scale 0.3s ease-out forwards',
+        'bounce-short': 'bounce-short 1s ease-in-out 2',
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'spin-slow': 'spin 3s linear infinite',
+        'bounce-slow': 'bounce 2s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -98,6 +117,28 @@ module.exports = {
           '0%': { opacity: '1', transform: 'translateY(0) scale(1)' },
           '100%': { opacity: '0', transform: 'translateY(16px) scale(0.98)' },
         },
+        'scan-line': {
+          '0%': { transform: 'translateY(0)', opacity: '1' },
+          '50%': { transform: 'translateY(100%)', opacity: '0.7' },
+          '50.1%': { transform: 'translateY(0)', opacity: '0.3' },
+          '100%': { transform: 'translateY(100%)', opacity: '1' },
+        },
+        'modal-scale': {
+          '0%': { transform: 'scale(0.95)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        'bounce-short': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-25%)' },
+        },
+        'pulse': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '.5' },
+        },
+      },
+      transitionProperty: {
+        'height': 'height',
+        'spacing': 'margin, padding',
       },
     },
   },
@@ -144,6 +185,10 @@ module.exports = {
         },
       }
       addUtilities(newUtilities, ['responsive', 'hover'])
+    },
+    // original 테마 클래스 추가
+    function({ addVariant }) {
+      addVariant('original', '.original &');
     }
   ],
   // Tailwind CSS와 부트스트랩을 함께 사용하기 위한 설정

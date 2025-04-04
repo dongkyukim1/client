@@ -28,16 +28,27 @@ export default function ReviewsSection() {
       console.log("리뷰 데이터 가져오기 시작");
       const data = await getReviews({ page: 1, pageSize: 3 });
       
-      if (data.reviews.length === 0 && data.totalCount === 0) {
+      if (!data || data.reviews.length === 0) {
         console.warn("가져온 리뷰 데이터가 없습니다");
+        setReviewsData({
+          reviews: [],
+          totalCount: 0,
+          page: 1,
+          pageSize: 3,
+        });
       } else {
         console.log(`${data.reviews.length}개의 리뷰를 가져왔습니다`);
+        setReviewsData(data);
       }
-      
-      setReviewsData(data);
     } catch (error) {
       console.error("리뷰를 가져오는 중 오류 발생:", error);
       setError("리뷰를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
+      setReviewsData({
+        reviews: [],
+        totalCount: 0,
+        page: 1,
+        pageSize: 3,
+      });
     } finally {
       setLoading(false);
     }

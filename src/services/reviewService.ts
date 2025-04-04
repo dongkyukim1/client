@@ -37,8 +37,8 @@ export async function getReviews({
 
     const response = await fetch(url, {
       signal: controller.signal,
-      cache: 'no-store',
-      next: { revalidate: 0 }
+      cache: 'force-cache',
+      next: { revalidate: 60 }
     });
     
     clearTimeout(timeoutId);
@@ -110,4 +110,15 @@ export async function getReviewById(id: string): Promise<Review | null> {
     console.error('리뷰 상세 가져오기 오류:', error);
     return null;
   }
-} 
+}
+
+export interface CreateReviewData {
+  title: string;
+  content: string;
+  location: string;
+  rating: number;
+  tags: string[];
+  images: string[];
+  receiptImage: string;
+}
+

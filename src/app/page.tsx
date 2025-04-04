@@ -367,18 +367,6 @@ export default function Home() {
           </div>
         </div>
       )}
-      <Link
-        href="/dashboard"
-        className="bg-main hover:bg-main-hover text-white p-4 rounded-lg max-w-xs w-full text-center text-lg font-semibold transition-all hover:shadow-lg"
-      >
-        시작하기
-      </Link>
-      <Link
-        href="/reviews"
-        className="bg-white/20 hover:bg-white/30 text-white border border-white/30 p-4 rounded-lg max-w-xs w-full text-center text-lg font-semibold transition-all hover:shadow-lg"
-      >
-        여행 리뷰 보기
-      </Link>
     </Layout>
   )
 }

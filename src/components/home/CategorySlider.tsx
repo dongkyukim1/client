@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { FaChevronRight, FaChevronLeft, FaFilter } from "react-icons/fa";
+import useThemeMode from '@/hooks/useDarkMode';
 
 const categories = [
   { id: 1, name: "한적한 시골", icon: "🏡" },
@@ -34,6 +35,10 @@ export default function CategorySlider({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  const { themeMode } = useThemeMode();
+  
+  // 다크모드 여부
+  const isDarkMode = themeMode === 'dark';
 
   const handleScroll = () => {
     if (scrollRef.current) {
@@ -65,26 +70,73 @@ export default function CategorySlider({
     }
   };
 
+  // 테마에 따른 스타일 결정
+  const getTextClass = () => {
+    return isDarkMode 
+      ? "font-medium text-sm text-white" 
+      : "font-medium text-sm text-gray-600";
+  };
+
+  const getFilterButtonClass = () => {
+    return isDarkMode
+      ? "flex items-center px-3 py-1 text-sm rounded-full border border-gray-600 bg-gray-800 hover:bg-gray-700 transition-colors"
+      : "flex items-center px-3 py-1 text-sm rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-colors";
+  };
+
+  const getScrollButtonClass = () => {
+    return isDarkMode
+      ? "absolute z-10 rounded-full bg-gray-800 border border-gray-600 p-2 hover:bg-gray-700"
+      : "absolute z-10 rounded-full bg-white shadow-sm border border-gray-200 p-2 hover:bg-gray-100";
+  };
+
+  const getIconClass = () => {
+    return isDarkMode ? "text-white" : "text-gray-600";
+  };
+
+  const getCategoryItemClass = (isSelected: boolean) => {
+    let baseClass = "flex items-center justify-center w-[50px] h-[50px] mb-1 p-2 rounded-md shadow-sm text-2xl ";
+    
+    if (isDarkMode) {
+      baseClass += isSelected ? 'bg-gray-700 border-2 border-pink-500' : 'bg-gray-800';
+    } else {
+      baseClass += isSelected ? 'bg-white border-2 border-pink-500' : 'bg-white';
+    }
+    
+    return baseClass;
+  };
+
+  const getCategoryTextClass = (isSelected: boolean) => {
+    let baseClass = "text-xs text-center font-medium mt-1 ";
+    
+    if (isDarkMode) {
+      baseClass += isSelected ? 'text-pink-400' : 'text-white';
+    } else {
+      baseClass += isSelected ? 'text-pink-600' : 'text-gray-700';
+    }
+    
+    return baseClass;
+  };
+
   return (
-    <div className="relative -mt-12 mb-16 mx-auto max-w-7xl">
+    <div className={`relative -mt-12 mb-16 mx-auto max-w-7xl ${isDarkMode ? 'bg-black' : ''}`}>
       <div className="flex justify-between items-center mb-3">
-        <p className="font-medium text-sm text-gray-600">추천 카테고리</p>
+        <p className={getTextClass()}>추천 카테고리</p>
         <button
-          className="flex items-center px-3 py-1 text-sm rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition-colors"
+          className={getFilterButtonClass()}
           onClick={onFilterClick}
         >
-          <FaFilter className="mr-2" />
-          필터
+          <FaFilter className={`mr-2 ${getIconClass()}`} />
+          <span className={getIconClass()}>필터</span>
         </button>
       </div>
 
       {showLeftArrow && (
         <button
           aria-label="Scroll left"
-          className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 rounded-full bg-white shadow-none border-none p-2 hover:bg-gray-100"
+          className={`${getScrollButtonClass()} left-2 top-1/2 transform -translate-y-1/2`}
           onClick={() => scroll("left")}
         >
-          <FaChevronLeft className="h-3 w-3" />
+          <FaChevronLeft className={getIconClass()} />
         </button>
       )}
 
@@ -107,16 +159,10 @@ export default function CategorySlider({
               }`}
               onClick={() => handleCategoryClick(category.id)}
             >
-              <div
-                className={`flex items-center justify-center w-[50px] h-[50px] mb-1 p-2 rounded-md bg-white shadow-sm text-2xl ${
-                  selectedCategory === category.id ? 'border-2 border-pink-500' : ''
-                }`}
-              >
+              <div className={getCategoryItemClass(selectedCategory === category.id)}>
                 {category.icon}
               </div>
-              <p className={`text-xs text-center font-medium mt-1 ${
-                selectedCategory === category.id ? 'text-pink-600' : 'text-gray-700'
-              }`}>
+              <p className={getCategoryTextClass(selectedCategory === category.id)}>
                 {category.name}
               </p>
             </div>
@@ -127,10 +173,10 @@ export default function CategorySlider({
       {showRightArrow && (
         <button
           aria-label="Scroll right"
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 rounded-full bg-white shadow-none border-none p-2 hover:bg-gray-100"
+          className={`${getScrollButtonClass()} right-2 top-1/2 transform -translate-y-1/2`}
           onClick={() => scroll("right")}
         >
-          <FaChevronRight className="h-3 w-3" />
+          <FaChevronRight className={getIconClass()} />
         </button>
       )}
     </div>

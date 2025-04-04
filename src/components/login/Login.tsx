@@ -15,18 +15,11 @@ import { authApi } from "@/services/api";
 
 export default function Login() {
   // 테스트 환경에서는 useSearchParams가 undefined일 수 있음
-
-  let searchParams;
-  try {
-    searchParams = useSearchParams();
-  } catch (e) {
-    // 테스트 환경에서는 빈 객체로 대체
-    searchParams = {
-      get: () => null,
-      has: () => false,
-    };
-  }
-
+  const searchParamsHook = useSearchParams();
+  const searchParams = typeof window !== 'undefined' ? searchParamsHook : {
+    get: () => null,
+    has: () => false,
+  };
 
   const router = useRouter();
 

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaUser } from 'react-icons/fa'
 import { useRouter } from 'next/navigation'
+import useThemeMode from '@/hooks/useDarkMode'
 
 // 지원되는 여행지 목록
 const SUPPORTED_LOCATIONS = ['제주도', '강릉', '부산', '여수', '경주', '전주', '속초', '울산'];
@@ -13,6 +14,7 @@ export default function HeroSection() {
   const [children, setChildren] = useState('0')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const { themeMode } = useThemeMode()
   
   const router = useRouter()
   
@@ -45,13 +47,37 @@ export default function HeroSection() {
     router.push(`/travel/create?${params.toString()}`);
   };
   
+  // 테마에 따른 비디오 오버레이 클래스 결정
+  const getVideoOverlayClass = () => {
+    switch(themeMode) {
+      case 'dark':
+        return "absolute inset-0 bg-black/80";
+      case 'light':
+        return "absolute inset-0 bg-gradient-to-r from-gray-800/60 to-gray-600/40";
+      default:
+        return "absolute inset-0 bg-gradient-to-r from-gray-800/70 to-gray-600/40";
+    }
+  };
+  
+  // 섹션 배경 클래스 결정
+  const getSectionClasses = () => {
+    switch(themeMode) {
+      case 'dark':
+        return "relative pt-20 pb-8 md:pb-12 lg:pb-16 overflow-hidden bg-black text-white";
+      case 'light':
+        return "relative pt-20 pb-8 md:pb-12 lg:pb-16 overflow-hidden bg-white text-gray-800";
+      default:
+        return "relative pt-20 pb-8 md:pb-12 lg:pb-16 overflow-hidden bg-white text-gray-800";
+    }
+  };
+  
   return (
-    <section className="relative pt-20 pb-8 md:pb-12 lg:pb-16 overflow-hidden">
+    <section className={getSectionClasses()}>
       {/* 배경 이미지 */}
       <div className="absolute inset-0 z-0">
         <div className="w-full h-full">
           <div className="relative w-full h-[70vh] min-h-[550px] max-h-[700px]">
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-800/70 to-gray-600/40"></div>
+            <div className={getVideoOverlayClass()}></div>
             <video 
               src="/videos/travel-video.mp4" 
               autoPlay 
@@ -104,20 +130,20 @@ export default function HeroSection() {
           </div>
           
           {/* 검색 패널 */}
-          <div className="bg-white rounded-2xl shadow-xl max-w-4xl z-10 search-panel animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-4xl z-10 search-panel animate-fade-in">
             <div className="p-5 lg:p-6">
-              <h2 className="text-xl font-bold text-gray-700 mb-4 hidden md:block">나만의 여행 계획 만들기</h2>
+              <h2 className="text-xl font-bold text-gray-700 dark:text-white mb-4 hidden md:block">나만의 여행 계획 만들기</h2>
               
               {/* 검색 필드 */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {/* 위치 */}
                 <div className="md:col-span-4 lg:col-span-1">
-                  <label className="block text-gray-700 text-sm font-medium mb-2 flex items-center">
+                  <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2 flex items-center">
                     <FaMapMarkerAlt className="mr-2 text-rose-500" />
                     <span>여행지</span>
                   </label>
                   <input 
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="어디로 여행가세요?"
@@ -126,26 +152,26 @@ export default function HeroSection() {
                 
                 {/* 체크인/체크아웃 날짜 */}
                 <div className="md:col-span-2 lg:col-span-1">
-                  <label className="block text-gray-700 text-sm font-medium mb-2 flex items-center">
+                  <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2 flex items-center">
                     <FaCalendarAlt className="mr-2 text-rose-500" />
                     <span>출발일</span>
                   </label>
                   <input 
                     type="date"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                   />
                 </div>
                 
                 <div className="md:col-span-2 lg:col-span-1">
-                  <label className="block text-gray-700 text-sm font-medium mb-2 flex items-center">
+                  <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2 flex items-center">
                     <FaCalendarAlt className="mr-2 text-rose-500" />
                     <span>도착일</span>
                   </label>
                   <input 
                     type="date"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                   />
@@ -153,14 +179,14 @@ export default function HeroSection() {
                 
                 {/* 인원수 */}
                 <div className="lg:col-span-1">
-                  <label className="block text-gray-700 text-sm font-medium mb-2 flex items-center">
+                  <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2 flex items-center">
                     <FaUser className="mr-2 text-rose-500" />
                     <span>인원</span>
                   </label>
                   <div className="flex gap-3">
                     <div className="w-1/2">
                       <select 
-                        className="w-full px-2 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 appearance-none bg-white text-xs border-gray-300 rounded-lg"
+                        className="w-full px-2 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs border-gray-300 dark:border-gray-600 rounded-lg"
                         value={adults}
                         onChange={(e) => setAdults(e.target.value)}
                         style={{ paddingRight: '25px' }}
@@ -172,7 +198,7 @@ export default function HeroSection() {
                     </div>
                     <div className="w-1/2">
                       <select 
-                        className="w-full px-2 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 appearance-none bg-white text-xs border-gray-300 rounded-lg"
+                        className="w-full px-2 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs border-gray-300 dark:border-gray-600 rounded-lg"
                         value={children}
                         onChange={(e) => setChildren(e.target.value)}
                         style={{ paddingRight: '25px' }}

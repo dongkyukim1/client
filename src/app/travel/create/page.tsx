@@ -140,9 +140,10 @@ export default function CreateTravelPlan() {
       );
       
       setRecommendation(data as TravelRecommendation);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('여행 계획 생성 오류:', err);
-      setError(err.message || '여행 계획을 생성하는 중 오류가 발생했습니다.');
+      const errorMessage = err instanceof Error ? err.message : '여행 계획을 생성하는 중 오류가 발생했습니다.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
       setSubmitting(false);
@@ -325,13 +326,13 @@ export default function CreateTravelPlan() {
         <div className="mt-6 flex space-x-4">
           <button
             onClick={() => setRecommendation(null)}
-            className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md"
+            className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md border-none"
           >
             다시 계획하기
           </button>
           <button
             onClick={saveTravelPlan}
-            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
+            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md border-none"
           >
             저장하고 종료하기
           </button>
@@ -341,20 +342,38 @@ export default function CreateTravelPlan() {
   };
 
   // 여행 계획 저장 함수
-  const saveTravelPlan = () => {
+  const saveTravelPlan = async () => {
     if (!recommendation || !destination || !startDate || !endDate || !travelStyle) {
       alert('여행 계획 정보가 완성되지 않았습니다.');
       return;
     }
 
     try {
+      setLoading(true);
+      
+      // 서버에 저장할 데이터 구성
+      const planData = {
+        destination,
+        startDate,
+        endDate,
+        travelStyle,
+        duration: calculateDays(),
+        schedule: recommendation.schedule,
+        // 기타 필요한 정보
+        message: recommendation.message
+      };
+      
+      // API 호출하여 서버에 저장
+      const response = await recommendationApi.saveTravelRecommendation(planData);
+      console.log('저장 응답:', response.data);
+      
       // localStorage에서 기존 계획 가져오기
       const existingPlansJSON = localStorage.getItem('travelPlans');
       const existingPlans = existingPlansJSON ? JSON.parse(existingPlansJSON) : [];
       
       // 새 여행 계획 객체 생성
       const newPlan = {
-        id: Date.now().toString(), // 유니크 ID로 타임스탬프 사용
+        id: response.data.id || Date.now().toString(), // 서버에서 반환한 ID 사용
         destination,
         startDate,
         endDate,
@@ -379,6 +398,8 @@ export default function CreateTravelPlan() {
     } catch (error) {
       console.error('여행 계획 저장 오류:', error);
       alert('여행 계획 저장 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -534,7 +555,7 @@ export default function CreateTravelPlan() {
                         type="button"
                         onClick={handlePrev}
                         disabled={step === 0}
-                        className={`px-6 py-2 rounded-md ${
+                        className={`px-6 py-2 rounded-md border-none ${
                           step === 0 ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-500' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                         }`}
                       >
@@ -545,7 +566,7 @@ export default function CreateTravelPlan() {
                           type="button"
                           onClick={handleNext}
                           disabled={!canProgress()}
-                          className={`px-6 py-2 rounded-md ${
+                          className={`px-6 py-2 rounded-md border-none ${
                             canProgress() ? 'bg-blue-500 text-white hover:bg-blue-600' : 'opacity-50 cursor-not-allowed bg-blue-300 text-white'
                           }`}
                         >
@@ -555,7 +576,7 @@ export default function CreateTravelPlan() {
                         <button
                           type="submit"
                           disabled={submitting || !isComplete()}
-                          className={`px-6 py-2 rounded-md ${
+                          className={`px-6 py-2 rounded-md border-none ${
                             submitting || !isComplete() ? 'opacity-50 cursor-not-allowed bg-blue-300 text-white' : 'bg-blue-500 text-white hover:bg-blue-600'
                           }`}
                         >

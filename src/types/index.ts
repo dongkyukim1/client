@@ -4,21 +4,6 @@ export interface User {
   name: string;
 }
 
-export interface Resume {
-  id: number;
-  title: string;
-  content?: string;
-  feedback?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+// 이력서 관련 인터페이스 삭제
 
-export interface CreateResumeRequest {
-  title: string;
-  content: string;
-}
-
-export interface UpdateResumeRequest {
-  title?: string;
-  content?: string;
-} 
+// 여기에 다른 타입 정의가 있다면 그대로 유지 

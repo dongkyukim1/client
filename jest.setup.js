@@ -40,12 +40,76 @@ if (typeof window !== 'undefined') {
     window.performance = {};
   }
   
-  window.performance.mark = window.performance.mark || jest.fn();
-  window.performance.measure = window.performance.measure || jest.fn();
-  window.performance.getEntriesByType = window.performance.getEntriesByType || jest.fn(() => []);
-  window.performance.getEntriesByName = window.performance.getEntriesByName || jest.fn(() => [{
-    duration: 10,
-  }]);
+  // 모킹된 성능 항목 생성 도우미 함수
+  const createMockEntry = (name, startTime, duration) => ({
+    name,
+    entryType: 'measure',
+    startTime: startTime || 0,
+    duration: duration || 10,
+    toJSON: () => ({ name, entryType: 'measure', startTime, duration }),
+  });
+  
+  // 성능 측정 항목 저장
+  const performanceEntries = new Map();
+  
+  window.performance.mark = window.performance.mark || jest.fn((name) => {
+    performanceEntries.set(name, {
+      name,
+      entryType: 'mark',
+      startTime: Date.now(),
+      duration: 0,
+    });
+  });
+  
+  window.performance.measure = window.performance.measure || jest.fn((name, startMark, endMark) => {
+    const start = performanceEntries.get(startMark);
+    const end = performanceEntries.get(endMark);
+    
+    if (!start) {
+      throw new Error(`The mark '${startMark}' does not exist.`);
+    }
+    
+    if (!end) {
+      throw new Error(`The mark '${endMark}' does not exist.`);
+    }
+    
+    const duration = end.startTime - start.startTime;
+    performanceEntries.set(name, createMockEntry(name, start.startTime, duration));
+  });
+  
+  window.performance.getEntriesByType = window.performance.getEntriesByType || jest.fn((type) => {
+    const entries = [];
+    performanceEntries.forEach(entry => {
+      if (entry.entryType === type) {
+        entries.push(entry);
+      }
+    });
+    return entries;
+  });
+  
+  window.performance.getEntriesByName = window.performance.getEntriesByName || jest.fn((name, type) => {
+    const entry = performanceEntries.get(name);
+    if (entry && (!type || entry.entryType === type)) {
+      return [entry];
+    }
+    return [];
+  });
+  
+  window.performance.clearMarks = window.performance.clearMarks || jest.fn(() => {
+    performanceEntries.forEach((entry, key) => {
+      if (entry.entryType === 'mark') {
+        performanceEntries.delete(key);
+      }
+    });
+  });
+  
+  window.performance.clearMeasures = window.performance.clearMeasures || jest.fn(() => {
+    performanceEntries.forEach((entry, key) => {
+      if (entry.entryType === 'measure') {
+        performanceEntries.delete(key);
+      }
+    });
+  });
   
   // matchMedia 모킹
   window.matchMedia = window.matchMedia || function() {

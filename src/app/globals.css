@@ -8,6 +8,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 테마별 CSS 변수 정의 */
 :root {
   --foreground-rgb: 51, 51, 51;
   --background-rgb: 255, 255, 255;
@@ -21,22 +22,91 @@
   --color-gray-light: #F7F7F7;
   --color-gray-medium: #DDDDDD;
   --color-gray-dark: #717171;
+  
+  /* 테마 전환용 변수 */
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --bg-primary: #ffffff;
+  --bg-secondary: #F3F4F6;
+  --border-color: #E5E7EB;
 }
 
-/* 다크 모드 비활성화 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 51, 51, 51;
-    --background-rgb: 255, 255, 255;
-  }
+/* 다크 모드 변수 */
+.dark {
+  --foreground-rgb: 255, 255, 255;
+  --background-rgb: 0, 0, 0;
+  --color-gray-light: #1f1f1f;
+  --color-gray-medium: #333333;
+  --color-gray-dark: #cccccc;
+  
+  /* 테마 전환용 변수 */
+  --text-primary: #ffffff;
+  --text-secondary: #D1D5DB;
+  --bg-primary: #000000;
+  --bg-secondary: #111827;
+  --border-color: #374151;
+
+  /* 섹션 배경색 */
+  --section-bg: #000000;
+  --card-bg: #111827;
+  --card-border: #1f2937;
+  --input-bg: #1f2937;
+}
+
+/* 라이트 모드 변수 */
+.light {
+  --foreground-rgb: 51, 51, 51;
+  --background-rgb: 255, 255, 255;
+  --color-gray-light: #F7F7F7;
+  --color-gray-medium: #DDDDDD;
+  --color-gray-dark: #717171;
+  
+  /* 테마 전환용 변수 */
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --bg-primary: #ffffff;
+  --bg-secondary: #F3F4F6;
+  --border-color: #E5E7EB;
+
+  /* 섹션 배경색 */
+  --section-bg: #ffffff;
+  --card-bg: #ffffff;
+  --card-border: #E5E7EB;
+  --input-bg: #ffffff;
+}
+
+/* 오리지널 모드 변수 */
+.original {
+  --foreground-rgb: 51, 51, 51;
+  --background-rgb: 255, 255, 255;
+  --color-gray-light: #F7F7F7;
+  --color-gray-medium: #DDDDDD;
+  --color-gray-dark: #717171;
+  
+  /* 테마 전환용 변수 */
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --bg-primary: #ffffff;
+  --bg-secondary: #F3F4F6;
+  --border-color: #E5E7EB;
+  
+  /* 오리지널 모드 전용 핑크색 강조 */
+  --accent-color: #ec4899;
+
+  /* 섹션 배경색 */
+  --section-bg: #ffffff;
+  --card-bg: #ffffff;
+  --card-border: #E5E7EB;
+  --input-bg: #ffffff;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  color: var(--text-primary);
+  background: var(--bg-primary);
   min-height: 100vh;
   font-family: var(--font-main);
   letter-spacing: -0.01em;
+  transition: color 0.3s ease, background-color 0.3s ease;
 }
 
 /* 커스텀 유틸리티 클래스 */
@@ -214,4 +284,102 @@ html {
     -webkit-appearance: none;
     margin: 0;
   }
+}
+
+/* 테마 전환 애니메이션 */
+.theme-transition {
+  transition-property: color, background-color, border-color;
+  transition-duration: 0.3s;
+  transition-timing-function: ease-in-out;
+}
+
+/* 다크모드 텍스트 색상 대응 */
+.text-theme-primary {
+  color: var(--text-primary);
+}
+
+.text-theme-secondary {
+  color: var(--text-secondary);
+}
+
+.bg-theme-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-theme-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.border-theme {
+  border-color: var(--border-color);
+}
+
+/* 테마 전환을 위한 추가 클래스 */
+.section-theme {
+  background-color: var(--section-bg);
+  color: var(--text-primary);
+}
+
+.card-theme {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+  color: var(--text-primary);
+}
+
+.input-theme {
+  background-color: var(--input-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+/* 다크모드 전체 페이지 적용 */
+.dark body,
+.dark main,
+.dark section,
+.dark div {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body {
+  background-color: black;
+  color: white;
+}
+
+.dark section:not(.section-theme) {
+  background-color: black;
+  color: white;
+}
+
+.dark main {
+  background-color: black;
+  color: white;
+}
+
+.dark .section {
+  background-color: black;
+}
+
+.dark .bg-white {
+  background-color: #111827 !important;
+}
+
+.dark .text-gray-800 {
+  color: #f3f4f6 !important;
+}
+
+.dark .text-gray-700 {
+  color: #e5e7eb !important;
+}
+
+.dark .text-gray-600 {
+  color: #d1d5db !important;
+}
+
+.dark .border-gray-200 {
+  border-color: #374151 !important;
+}
+
+/* 원래 텍스트 색상 */
+html.original .text-gray-800 {
+  color: #ec4899 !important;
 }

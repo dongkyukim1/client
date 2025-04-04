@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { Resume, CreateResumeRequest, UpdateResumeRequest } from '@/types';
-import { getSession, signOut } from 'next-auth/react';
+// import { Resume, CreateResumeRequest, UpdateResumeRequest } from '@/types';
+import { getSession } from 'next-auth/react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const FASTAPI_URL = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8000';
@@ -31,19 +31,34 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-export const resumeApi = {
-  create: (data: CreateResumeRequest) =>
-    api.post<Resume>('/api/resumes', data),
+// 이력서 API 삭제
 
-  getAll: () =>
-    api.get<Resume[]>('/api/resumes'),
-
-  getById: (id: number) =>
-    api.get<Resume>(`/api/resumes/${id}`),
-
-  update: (id: number, data: UpdateResumeRequest) =>
-    api.put<Resume>(`/api/resumes/${id}`, data),
-};
+// TravelRecommendation 타입 정의
+interface TravelPlanData {
+  destination: string;
+  startDate: string;
+  endDate: string;
+  travelStyle: string;
+  duration: number;
+  schedule: Record<string, {
+    spots: Array<{
+      name: string;
+      addr1: string;
+      addr2?: string;
+      category_name?: string;
+      category_code?: string;
+      type?: string;
+      latitude?: number;
+      longitude?: number;
+    }>;
+    accommodation?: {
+      name: string;
+      addr1: string;
+      addr2?: string;
+    };
+  }>;
+  message?: string;
+}
 
 // 여행 추천 API
 export const recommendationApi = {
@@ -59,6 +74,27 @@ export const recommendationApi = {
       sigungu_code: sigunguCode,
       category_codes: categories,
       days: days
+    });
+  },
+  
+  // 추천 결과 저장 API
+  saveTravelRecommendation: (data: TravelPlanData, proofImage?: File) => {
+    console.log('Saving travel recommendation:', data);
+    
+    const formData = new FormData();
+    
+    // JSON 데이터를 FormData에 추가
+    formData.append('data', JSON.stringify(data));
+    
+    // 증명 이미지가 있으면 추가
+    if (proofImage) {
+      formData.append('proofImage', proofImage);
+    }
+    
+    return api.post('/api/recommend/save', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
   },
 };
