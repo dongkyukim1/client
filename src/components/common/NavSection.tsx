@@ -51,11 +51,7 @@ export default function NavSection() {
                   className="w-full text-sm focus:outline-none border-none"
                 />
               </div>
-              <Button 
-                variant="primary"
-                size="sm"
-                className="ml-2 rounded-full"
-              >
+              <Button variant="primary" size="sm" className="ml-2 rounded-full">
                 <FaSearch className="text-sm" />
               </Button>
             </div>
@@ -63,6 +59,12 @@ export default function NavSection() {
         </div>
 
         <div className="flex items-center gap-1 md:gap-3">
+          <Link
+            href="/festival"
+            className="hidden md:block text-gray-600 text-sm font-medium hover:text-gray-900 px-3 py-2 rounded-full hover:bg-gray-50 transition-colors"
+          >
+            축제
+          </Link>
           <Link
             href="/recommendation"
             className="hidden md:block text-gray-600 text-sm font-medium hover:text-gray-900 px-3 py-2 rounded-full hover:bg-gray-50 transition-colors"
@@ -82,21 +84,13 @@ export default function NavSection() {
             리뷰보기
           </Link>
           <Link href="/dashboard" className="hidden md:block">
-            <Button
-              variant="outline"
-              size="sm"
-              className="font-medium"
-            >
+            <Button variant="outline" size="sm" className="font-medium">
               AI 여행 계획
             </Button>
           </Link>
 
           <Link href="/dashboard" className="md:hidden">
-            <Button
-              variant="primary"
-              size="sm"
-              className="text-xs"
-            >
+            <Button variant="primary" size="sm" className="text-xs">
               AI 여행
             </Button>
           </Link>
