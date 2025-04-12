@@ -12,16 +12,25 @@ import { signIn } from "next-auth/react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { authApi } from "@/services/api";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Login() {
   // 테스트 환경에서는 useSearchParams가 undefined일 수 있음
   const searchParamsHook = useSearchParams();
-  const searchParams = typeof window !== 'undefined' ? searchParamsHook : {
-    get: () => null,
-    has: () => false,
-  };
+  const searchParams =
+    typeof window !== "undefined"
+      ? searchParamsHook
+      : {
+          get: () => null,
+          has: () => false,
+        };
 
   const router = useRouter();
+
+  let clientId = "";
+  useEffect(() => {
+    clientId = uuidv4();
+  }, []);
 
   // 탭 전환
   const [isLoginTab, setIsLoginTab] = useState(true);
@@ -171,7 +180,7 @@ export default function Login() {
       return;
     }
 
-    const res = await authApi.certification(certificationNumber);
+    const res = await authApi.checkCertification(signupEmail, certificationNumber);
     if (res.code === "SU") {
       signupPasswordRef.current?.focus();
       setCertificationSuccess(true);
@@ -181,25 +190,24 @@ export default function Login() {
     }
   };
 
-/** 이메일 로그인 */
-const handleLocalLogin = async () => {
-  setLoginErrorMessage("");
+  /** 이메일 로그인 */
+  const handleLocalLogin = async () => {
+    setLoginErrorMessage("");
 
-  if (!loginEmail) {
-    loginEmailRef.current?.focus();
-    setLoginErrorMessage(AuthErrorMessage.EMAIL_REQUIRED);
-    return;
-  }
+    if (!loginEmail) {
+      loginEmailRef.current?.focus();
+      setLoginErrorMessage(AuthErrorMessage.EMAIL_REQUIRED);
+      return;
+    }
 
-  if (!loginPassword) {
-    loginPasswordRef.current?.focus();
-    setLoginErrorMessage(AuthErrorMessage.PASSWORD_REQUIRED);
-    return;
-  }
+    if (!loginPassword) {
+      loginPasswordRef.current?.focus();
+      setLoginErrorMessage(AuthErrorMessage.PASSWORD_REQUIRED);
+      return;
+    }
 
-  signIn("email", { email: loginEmail, password: loginPassword });
-};
-
+    signIn("email", { email: loginEmail, password: loginPassword });
+  };
 
   /** 소셜 로그인 */
   const handleSocialLogin = (provider: string) => {
@@ -319,6 +327,7 @@ const handleLocalLogin = async () => {
     if (res.code === "SU") {
       setCheckedEmail(signupEmail);
       certificationNumberRef.current?.focus();
+      authApi.certification(signupEmail, clientId);
     } else {
       setCheckedEmail("");
       signupEmailRef.current?.focus();

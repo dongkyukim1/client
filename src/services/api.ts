@@ -76,21 +76,21 @@ export const recommendationApi = {
       days: days
     });
   },
-  
+
   // 추천 결과 저장 API
   saveTravelRecommendation: (data: TravelPlanData, proofImage?: File) => {
     console.log('Saving travel recommendation:', data);
-    
+
     const formData = new FormData();
-    
+
     // JSON 데이터를 FormData에 추가
     formData.append('data', JSON.stringify(data));
-    
+
     // 증명 이미지가 있으면 추가
     if (proofImage) {
       formData.append('proofImage', proofImage);
     }
-    
+
     return api.post('/api/recommend/save', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -137,16 +137,30 @@ export const authApi = {
     }
   },
 
-  /** 인증 번호 확인 */
-  certification: async (certification: string) => {
+  /** 인증 번호 요청 */
+  certification: async (email: string, clientId: string) => {
     try {
       const res = await axios.post(`${API_URL}/certification`, {
+        email,
+        clientId
+      })
+      return res.data
+    } catch (error) {
+      console.error("인증 번호 요청 API 호출 중 에러: ", error);
+    }
+  },
+
+  /** 인증 번호 확인 */
+  checkCertification: async (email: string, certification: string) => {
+    try {
+      const res = await axios.post(`${API_URL}/check-certification`, {
+        email,
         certification
       })
       return res.data
     } catch (error) {
       console.error("인증 번호 확인 API 호출 중 에러: ", error);
     }
-  },
+  }
 
 };
