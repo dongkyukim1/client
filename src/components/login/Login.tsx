@@ -27,9 +27,16 @@ export default function Login() {
 
   const router = useRouter();
 
-  let clientId = "";
+  const [clientId, setClientId] = useState("");
   useEffect(() => {
-    clientId = uuidv4();
+    const id = localStorage.getItem("clientId");
+    if (id) {
+      setClientId(id);
+    } else {
+      const id = uuidv4();
+      localStorage.setItem("clientId", uuidv4());
+      setClientId(id);
+    }
   }, []);
 
   // 탭 전환

@@ -153,11 +153,15 @@ export const authApi = {
   /** 인증 번호 확인 */
   checkCertification: async (email: string, certification: string) => {
     try {
-      const res = await axios.post(`${API_URL}/check-certification`, {
-        email,
-        certification
-      })
-      return res.data
+      const res = await fetch(`${API_URL}/check-certification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, certification }),
+      });
+      const res_json = await res.json()
+      return res_json;
     } catch (error) {
       console.error("인증 번호 확인 API 호출 중 에러: ", error);
     }
