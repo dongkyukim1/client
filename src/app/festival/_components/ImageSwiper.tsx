@@ -15,7 +15,7 @@ export default function ImageSwiper({ images }: Props) {
   return (
     <Swiper
       slidesPerView={1}
-      loop={true}
+      // loop={true} // navigation 한번만 눌러지는 버그로 임시로 비활성화
       pagination={{ clickable: true }}
       navigation={true}
       modules={[Pagination, Navigation]}
