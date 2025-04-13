@@ -15,6 +15,7 @@ const logo = process.env.NEXT_PUBLIC_SERVICE_NAME;
 const NavSection = () => {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
   const { data: session } = useSession();
   const { themeMode, cycleTheme, isLoading } = useThemeMode();
 
@@ -125,8 +126,16 @@ const NavSection = () => {
 
   const handleLoginClick = () => {
     if (session?.user) {
-      signOut();
+      setOpenModal(!openModal);
     } else router.push("/login", { scroll: false });
+  };
+
+  const handleInfoClick = () => {
+    router.push("/info");
+  };
+
+  const handleLogoutClick = () => {
+    signOut();
   };
 
   // 현재 테마에 따라 헤더 스타일 변경
@@ -222,7 +231,7 @@ const NavSection = () => {
 
   return (
     <header className={getHeaderClasses()} suppressHydrationWarning>
-      <div className="container mx-auto px-4 md:px-8 flex items-center justify-between">
+      <div className="relative container mx-auto px-4 md:px-8 flex items-center justify-between">
         <Link href="/" className="flex items-center group">
           <FaMapMarkedAlt className="text-rose-500 text-3xl mr-2 transition-transform group-hover:scale-110 duration-300" />
           <span className="text-xl font-bold bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
@@ -299,6 +308,23 @@ const NavSection = () => {
             {getThemeIcon()}
           </button>
         </div>
+
+        {openModal ? (
+          <div className="absolute right-16 top-10 w-40 h-20 bg-white rounded-lg shadow-sm overflow-hidden">
+            <div
+              className="pl-3 h-1/2 leading-10 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+              onClick={handleInfoClick}
+            >
+              내정보
+            </div>
+            <div
+              className="pl-3 h-1/2 leading-10 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+              onClick={handleLogoutClick}
+            >
+              로그아웃
+            </div>
+          </div>
+        ) : null}
       </div>
     </header>
   );

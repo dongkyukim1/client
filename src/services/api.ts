@@ -168,3 +168,17 @@ export const authApi = {
   }
 
 };
+
+export const infoApi = {
+  /** 회원 정보 가져오기 */
+  getInfo: (email: string) => {
+    return api.post('/member', {
+      email
+    })
+  },
+
+  /** 회원 정보 수정하기 */
+  updateInfo: () => {
+
+  },
+}

@@ -56,4 +56,31 @@ export const handlers = [
     return certification === "1234" ? success : fail;
   }),
 
+
+  // 회원 정보 가져오기
+  http.post(`${API_URL}/member`, async ({ request }) => {
+    const { email } = await request.json();
+
+    const success = HttpResponse.json({
+      code: "SU",
+      message: "Success",
+      id: 9007199254740991,
+      email: "test01@email.com",
+      nickname: "양파",
+      phoneNumber: "01012345678",
+      provider: "provider",
+      providerId: "providerId",
+      imageUrl: "imageUrl",
+      customerKey: "customerKey",
+      withdrawn: true
+    })
+
+    const fail = HttpResponse.json({
+      code: "FA",
+      message: "Fail",
+    })
+
+    return false ? fail : success;
+  }),
+
 ]
