@@ -1,10 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FaArrowLeft, FaCalendarAlt, FaMapMarkerAlt, FaBed, FaUtensils, FaWalking, FaHeart, FaRegHeart, FaEdit, FaShareAlt, FaTrash, FaCoffee, FaMoon, FaSun, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaArrowLeft, FaCalendarAlt, FaMapMarkerAlt, FaBed, FaUtensils, FaWalking, FaHeart, FaRegHeart, FaEdit, FaShareAlt, FaTrash, FaCoffee, FaMoon, FaSun, FaChevronLeft, FaChevronRight, FaRoute, FaCog, FaCar, FaBus } from 'react-icons/fa';
 import { useRouter, useParams } from 'next/navigation';
+import Image from 'next/image';
 import Layout from '../../../components/Layout';
 import { getCityImage } from '@/utils/imageUtils';
+import { getAllRoutes, AllRouteInfo } from '@/utils/kakaoMapUtils';
+import RouteInfo from '@/components/RouteInfo';
+import DepartureModal from '@/components/DepartureModal';
 
 interface TravelPlan {
   id: string;
@@ -36,6 +40,7 @@ interface TravelPlan {
     }>;
     overview?: string;
   };
+  departurePoint?: string; // 사용자 출발지
 }
 
 // 날짜 포맷 함수
@@ -196,6 +201,41 @@ export default function TravelPlanDetail() {
   const [colorMode, setColorMode] = useState<'light' | 'dark' | 'neutral'>('light');
   const [currentSpotIndex, setCurrentSpotIndex] = useState(0);
   const ticketRef = useRef<HTMLDivElement>(null);
+  
+  // 경로 계산 관련 상태
+  const [departurePoint, setDeparturePoint] = useState<string>('');
+  const [showRouteInfo, setShowRouteInfo] = useState(false);
+  const [routeInfo, setRouteInfo] = useState<AllRouteInfo | null>(null);
+  const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
+  const [routeError, setRouteError] = useState<string | null>(null);
+  const [spotRoutes, setSpotRoutes] = useState<Record<string, Record<string, AllRouteInfo>>>({});
+  
+  // 현재 사용 중인 출발지 (두 번째 이상 코스에서 변경될 수 있음)
+  const [currentDeparturePoint, setCurrentDeparturePoint] = useState<string>('');
+  
+  // 모달 관련 상태
+  const [isDepartureModalOpen, setIsDepartureModalOpen] = useState(false);
+
+  // 일정 데이터 키 생성 함수
+  const getScheduleKey = (day: string) => {
+    if (plan?.recommendations?.schedule && 
+      Object.keys(plan.recommendations.schedule)[0]?.includes('day_')) {
+      return `day_${day}`;
+    }
+    return day;
+  };
+
+  // 현재 일정 데이터
+  const scheduleKey = plan ? getScheduleKey(activeDay) : '';
+  const currentDaySchedule = plan?.recommendations?.schedule?.[scheduleKey];
+  const spotsList = currentDaySchedule?.spots || [];
+  const accommodation = currentDaySchedule?.accommodation;
+
+  // 현재 선택된 장소
+  const currentSpot = spotsList[currentSpotIndex];
+
+  // 이전 장소 (경로 계산용)
+  const previousSpot = currentSpotIndex > 0 ? spotsList[currentSpotIndex - 1] : null;
 
   // 카테고리별 아이콘
   const getCategoryIcon = (category?: string) => {
@@ -206,7 +246,7 @@ export default function TravelPlanDetail() {
       return <FaUtensils size={24} className="text-orange-500" />;
     } else if (lowerCategory.includes('카페') || lowerCategory.includes('커피')) {
       return <FaCoffee size={24} className="text-amber-700" />;
-    } else if (lowerCategory.includes('숙소') || lowerCategory.includes('호텔')) {
+    } else if (lowerCategory.includes('숙소') || category.includes('호텔')) {
       return <FaBed size={24} className="text-blue-500" />;
     }
     
@@ -223,6 +263,12 @@ export default function TravelPlanDetail() {
           
           if (currentPlan) {
             setPlan(currentPlan);
+            // 저장된 출발지 불러오기
+            if (currentPlan.departurePoint) {
+              setDeparturePoint(currentPlan.departurePoint);
+              setCurrentDeparturePoint(currentPlan.departurePoint);
+            }
+            
             if (currentPlan.recommendations?.schedule) {
               const scheduleKeys = Object.keys(currentPlan.recommendations.schedule);
               if (scheduleKeys.length > 0) {
@@ -242,31 +288,238 @@ export default function TravelPlanDetail() {
     }
   }, [id]);
 
-  // 일정 데이터 키 생성 함수
-  const getScheduleKey = (day: string) => {
-    if (plan?.recommendations?.schedule && 
-      Object.keys(plan.recommendations.schedule)[0]?.includes('day_')) {
-      return `day_${day}`;
+  // 출발지 변경 시 저장
+  const saveDeparturePoint = (newDeparture: string) => {
+    if (!newDeparture.trim() || !plan) return;
+    
+    try {
+      const savedPlans = localStorage.getItem('travelPlans');
+      if (savedPlans) {
+        const plans = JSON.parse(savedPlans);
+        const updatedPlans = plans.map((p: TravelPlan) => {
+          if (p.id === id) {
+            return { ...p, departurePoint: newDeparture };
+          }
+          return p;
+        });
+        
+        localStorage.setItem('travelPlans', JSON.stringify(updatedPlans));
+        // 상태 업데이트
+        setDeparturePoint(newDeparture);
+        setPlan({ ...plan, departurePoint: newDeparture });
+        
+        // 현재 코스가 첫번째 코스일 경우
+        if (currentSpotIndex === 0 && spotsList.length > 0) {
+          console.log('출발지 변경 감지: 첫번째 장소 경로 계산 예약됨');
+          
+          // 기존 경로 정보 삭제
+          const firstSpot = spotsList[0];
+          const spotId = getSpotId(firstSpot, 0);
+          const newSpotRoutes = { ...spotRoutes };
+          if (newSpotRoutes[activeDay] && newSpotRoutes[activeDay][spotId]) {
+            console.log('출발지 변경으로 인한 경로 정보 삭제: ', spotId);
+            delete newSpotRoutes[activeDay][spotId];
+            setSpotRoutes(newSpotRoutes);
+          }
+          
+          // 현재 사용 중인 출발지 업데이트
+          setCurrentDeparturePoint(newDeparture);
+          
+          // 상태 업데이트 후 경로 계산이 실행되도록 setTimeout 사용
+          setTimeout(() => {
+            const destination = firstSpot.addr1 || firstSpot.address || '';
+            console.log(`출발지(${newDeparture})에서 첫번째 장소(${destination})로 경로 계산 시작`);
+            calculateRouteBetween(newDeparture, destination, spotId, true); // 강제 재계산 플래그
+          }, 100);
+        } 
+        // 현재 코스가 두번째 이상인 경우
+        else if (currentSpotIndex > 0 && spotsList.length > 0) {
+          console.log('출발지 변경 감지: 현재 장소 경로 계산 예약됨');
+          
+          // 기존 경로 정보 삭제
+          const currentSpot = spotsList[currentSpotIndex];
+          const spotId = getSpotId(currentSpot, currentSpotIndex);
+          const newSpotRoutes = { ...spotRoutes };
+          if (newSpotRoutes[activeDay] && newSpotRoutes[activeDay][spotId]) {
+            console.log('출발지 변경으로 인한 경로 정보 삭제: ', spotId);
+            delete newSpotRoutes[activeDay][spotId];
+            setSpotRoutes(newSpotRoutes);
+          }
+          
+          // 현재 사용 중인 출발지 업데이트
+          setCurrentDeparturePoint(newDeparture);
+          
+          setTimeout(() => {
+            const destination = currentSpot.addr1 || currentSpot.address || '';
+            console.log(`새 출발지(${newDeparture})에서 현재 장소(${destination})로 경로 계산 시작`);
+            calculateRouteBetween(newDeparture, destination, spotId, true); // 강제 재계산 플래그
+          }, 100);
+        }
+      }
+    } catch (error) {
+      console.error('출발지 저장 중 오류 발생:', error);
     }
-    return day;
   };
 
-  // 현재 일정 데이터
-  const scheduleKey = plan ? getScheduleKey(activeDay) : '';
-  const currentDaySchedule = plan?.recommendations?.schedule?.[scheduleKey];
-  const spotsList = currentDaySchedule?.spots || [];
-  const accommodation = currentDaySchedule?.accommodation;
+  // 두 지점 간 경로 계산 (범용 함수)
+  const calculateRouteBetween = async (origin: string, destination: string, spotId: string, forceRecalculate: boolean = false) => {
+    if (!origin || !destination) {
+      console.log('출발지 또는 도착지 주소 정보 부족:', origin, destination);
+      return;
+    }
+    
+    setIsCalculatingRoute(true);
+    setRouteError(null);
+    
+    try {
+      console.log(`경로 계산: ${origin} -> ${destination}`);
+      
+      // 이미 계산된 경로가 있는지 확인 (강제 재계산 플래그가 아닐 때만)
+      if (!forceRecalculate && spotRoutes[activeDay]?.[spotId]) {
+        console.log('이미 계산된 경로 정보 사용');
+        setRouteInfo(spotRoutes[activeDay][spotId]);
+        setShowRouteInfo(true);
+        return;
+      }
+      
+      console.log(forceRecalculate ? '강제 재계산: 출발지 변경됨' : '새 경로 계산');
+      
+      // 경로 계산
+      const result = await getAllRoutes(origin, destination);
+      
+      // 결과 저장
+      const newSpotRoutes = { ...spotRoutes };
+      if (!newSpotRoutes[activeDay]) {
+        newSpotRoutes[activeDay] = {};
+      }
+      newSpotRoutes[activeDay][spotId] = result;
+      setSpotRoutes(newSpotRoutes);
+      
+      setRouteInfo(result);
+      setShowRouteInfo(true);
+      console.log('경로 계산 완료:', result);
+    } catch (error) {
+      console.error('경로 계산 오류:', error);
+      setRouteError(error instanceof Error ? error.message : '경로 계산 중 오류가 발생했습니다.');
+    } finally {
+      setIsCalculatingRoute(false);
+    }
+  };
+
+  // 장소의 고유 식별자 생성 (ID가 없는 경우 인덱스 기반으로 생성)
+  const getSpotId = (spot: any, index: number): string => {
+    // 이미 ID가 있으면 사용
+    if (spot.id) return spot.id;
+    
+    // 주소 정보를 기반으로 유니크 ID 생성
+    const address = spot.addr1 || spot.address || '';
+    const title = spot.title || spot.name || '';
+    
+    // 일차_인덱스_주소해시 형태로 ID 생성
+    return `day${activeDay}_spot${index}_${encodeURIComponent(title).substring(0, 10)}`;
+  };
+
+  // 장소 변경 시 경로 정보 업데이트 (통합 처리)
+  useEffect(() => {
+    if (!spotsList || spotsList.length === 0) {
+      console.log('장소 목록이 비어있어 경로 계산을 건너뜁니다.');
+      setShowRouteInfo(false);
+      setRouteInfo(null);
+      return;
+    }
+    
+    console.log(`장소 변경 감지: 일차=${activeDay}, 인덱스=${currentSpotIndex}, 출발지=${departurePoint ? '설정됨' : '없음'}`);
+    
+    const currentSpot = spotsList[currentSpotIndex];
+    if (!currentSpot) {
+      console.log('현재 선택된 장소가 없습니다.');
+      setShowRouteInfo(false);
+      setRouteInfo(null);
+      return;
+    }
+    
+    // 장소 고유 ID 생성
+    const spotId = getSpotId(currentSpot, currentSpotIndex);
+    console.log(`현재 장소 ID 생성: ${spotId}`);
+    
+    // 저장된 경로 정보가 있는지 확인
+    if (spotRoutes[activeDay]?.[spotId]) {
+      console.log(`저장된 경로 정보 사용: 인덱스=${currentSpotIndex}, 장소ID=${spotId}`);
+      setRouteInfo(spotRoutes[activeDay][spotId]);
+      setShowRouteInfo(true);
+      return;
+    }
+    
+    // 첫 번째 장소 (출발지 → 첫번째 장소)
+    if (currentSpotIndex === 0) {
+      if (departurePoint) {
+        const destination = currentSpot.addr1 || currentSpot.address || '';
+        console.log(`출발지(${departurePoint})에서 첫번째 장소(${destination})로 경로 계산 호출`);
+        calculateRouteBetween(departurePoint, destination, spotId);
+      } else {
+        console.log('출발지가 설정되지 않아 경로 정보를 표시하지 않습니다.');
+        setShowRouteInfo(false);
+        setRouteInfo(null);
+      }
+    } 
+    // 두 번째 이후 장소 (이전 장소 → 현재 장소)
+    else if (currentSpotIndex > 0) {
+      const previousSpot = spotsList[currentSpotIndex - 1];
+      if (previousSpot) {
+        const origin = previousSpot.addr1 || previousSpot.address || '';
+        const destination = currentSpot.addr1 || currentSpot.address || '';
+        console.log(`이전 장소(${origin})에서 현재 장소(${destination})로 경로 계산 호출`);
+        calculateRouteBetween(origin, destination, spotId);
+      }
+    }
+  }, [currentSpotIndex, activeDay, spotsList]);
+
+  // 일차 변경 시 루트 정보 초기화
+  useEffect(() => {
+    console.log(`일차 변경: ${activeDay}일차`);
+    setShowRouteInfo(false);
+    setRouteInfo(null);
+    setCurrentSpotIndex(0); // 일차 변경 시 첫번째 장소로 리셋
+  }, [activeDay]);
 
   // 다음 또는 이전 카드로 이동하는 함수
   const goToNextSpot = () => {
     if (spotsList && currentSpotIndex < spotsList.length - 1) {
-      setCurrentSpotIndex(prev => prev + 1);
+      const nextIndex = currentSpotIndex + 1;
+      setCurrentSpotIndex(nextIndex);
+      
+      // 다음 장소 경로 정보 업데이트
+      if (nextIndex < spotsList.length) {
+        const nextSpot = spotsList[nextIndex];
+        const spotId = getSpotId(nextSpot, nextIndex);
+        
+        // 저장된 경로 정보가 있으면 사용
+        if (spotRoutes[activeDay]?.[spotId]) {
+          console.log(`다음 장소로 이동: 인덱스=${nextIndex}, 저장된 경로 정보 사용 (ID: ${spotId})`);
+          setRouteInfo(spotRoutes[activeDay][spotId]);
+          setShowRouteInfo(true);
+        }
+      }
     }
   };
 
   const goToPrevSpot = () => {
     if (currentSpotIndex > 0) {
-      setCurrentSpotIndex(prev => prev - 1);
+      const prevIndex = currentSpotIndex - 1;
+      setCurrentSpotIndex(prevIndex);
+      
+      // 이전 장소 경로 정보 업데이트
+      if (prevIndex >= 0) {
+        const prevSpot = spotsList[prevIndex];
+        const spotId = getSpotId(prevSpot, prevIndex);
+        
+        // 저장된 경로 정보가 있으면 사용
+        if (spotRoutes[activeDay]?.[spotId]) {
+          console.log(`이전 장소로 이동: 인덱스=${prevIndex}, 저장된 경로 정보 사용 (ID: ${spotId})`);
+          setRouteInfo(spotRoutes[activeDay][spotId]);
+          setShowRouteInfo(true);
+        }
+      }
     }
   };
 
@@ -359,17 +612,26 @@ export default function TravelPlanDetail() {
       : 'bg-[#3b82f6] text-white hover:bg-[#2563eb]'; // 라이트모드
 
   // 여기에 함수 정의 - 컴포넌트 안에 위치
-  const getButtonStyle = (isActive = false) => {
-    if (isActive) {
-      return 'bg-[#d25778] text-white';
+  const getButtonStyle = (isPrimary = false) => {
+    if (isPrimary) {
+      switch (colorMode) {
+        case 'dark': 
+          return 'bg-blue-600 hover:bg-blue-700 text-white';
+        case 'neutral': 
+          return 'bg-[#7c3aed] hover:bg-[#6d28d9] text-white';
+        default: 
+          return 'bg-blue-500 hover:bg-blue-600 text-white';
+      }
+    } else {
+      switch (colorMode) {
+        case 'dark': 
+          return 'bg-gray-700 hover:bg-gray-600 text-gray-300';
+        case 'neutral': 
+          return 'bg-[#e2e8f0] hover:bg-[#cbd5e1] text-[#475569]';
+        default: 
+          return 'bg-gray-100 hover:bg-gray-200 text-gray-700';
+      }
     }
-    
-    if (colorMode === 'dark') {
-      return 'bg-gray-500 text-white hover:bg-gray-400'; // text-gray-200 → text-white
-    }
-    
-    // 여기서는 네츄럴모드 감지를 간단하게 하고, 기본값으로 라이트모드 적용
-    return 'bg-gray-200 text-gray-800 hover:bg-gray-300'; // 라이트모드
   };
   
   const getSlideButtonStyle = () => {
@@ -409,6 +671,18 @@ export default function TravelPlanDetail() {
       case 'dark': return 'border-gray-700';
       case 'neutral': return 'border-gray-400';
       default: return 'border-gray-300';
+    }
+  };
+
+  // 컬러모드에 따른 입력 스타일
+  const getInputStyle = () => {
+    switch (colorMode) {
+      case 'dark': 
+        return 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500';
+      case 'neutral': 
+        return 'bg-[#f1f5f9] border-[#cbd5e1] text-[#334155] focus:border-[#7c3aed]';
+      default: 
+        return 'bg-white border-gray-300 text-gray-900 focus:border-blue-500';
     }
   };
 
@@ -532,7 +806,27 @@ export default function TravelPlanDetail() {
               일정
             </h2>
             
-            {/* 티켓 디자인 슬라이더 - 모드에 따라 적절히 변경 */}
+            {/* 출발지 설정/변경 버튼 (모든 코스에 표시) */}
+            {spotsList.length > 0 && (
+              <div className="flex justify-center mb-4">
+                <button
+                  onClick={() => {
+                    console.log(`${currentSpotIndex === 0 ? '출발지 설정' : '출발지 변경'} 버튼 클릭됨!`);
+                    setIsDepartureModalOpen(true);
+                  }}
+                  className="px-4 py-2.5 rounded-lg text-base font-medium bg-[#FEE500] text-black hover:bg-[#F6D800] border-0 outline-none flex items-center justify-center gap-2 shadow-md transition-colors"
+                  type="button"
+                >
+                  <FaMapMarkerAlt className="text-[#000000]" />
+                  <span className="flex items-center">
+                    {currentSpotIndex === 0 ? '출발지 설정' : '출발지 변경'}
+                    <span className="ml-1 text-xs font-normal opacity-75">by Kakao</span>
+                  </span>
+                </button>
+              </div>
+            )}
+            
+            {/* 티켓 디자인 슬라이더 */}
             <div className="relative">
               {spotsList.length > 0 ? (
                 <div className="relative">
@@ -541,49 +835,84 @@ export default function TravelPlanDetail() {
                     {/* 티켓 카드 */}
                     <div 
                       ref={ticketRef}
-                      className="w-[650px] h-[320px] relative transition-all duration-300 rounded-[20px] p-[5px] my-[40px] overflow-hidden"
+                      className="w-[650px] h-[340px] relative transition-all duration-300 rounded-[20px] p-[5px] my-[40px] overflow-hidden"
                       style={{
                         background: 'linear-gradient(to right, #d25778, #ec585c, #e7d155, #56a8c6)'
                       }}
                     >
-                      <div className={`w-full h-full relative ${colorMode === 'dark' ? 'bg-black' : 'bg-white'} rounded-[15px] pt-[40px] pb-[40px] px-[10px]`}>
-                        {/* 메인 콘텐츠 영역 */}
-                        <div className="flex h-full">
+                      <div className={`w-full h-full relative ${colorMode === 'dark' ? 'bg-black' : 'bg-white'} rounded-[15px] flex flex-col`}>
+                        {/* 상단 영역: 장소 정보 */}
+                        <div className="flex-1 flex pt-[30px] px-[10px] overflow-hidden">
                           {/* 왼쪽 티켓 섹션 */}
-                          <div className="w-[70%] pl-[35px] pr-[10px] flex flex-col justify-between">
+                          <div className="w-[70%] pl-[35px] pr-[10px] flex flex-col min-h-0">
                             {/* 상단: 장소명 및 주소 */}
-                            <div>
-                              <div className="flex items-start mb-4">
-                                <div className={`w-[60px] h-[60px] rounded-full ${colorMode === 'dark' ? 'bg-[#333]' : 'bg-gray-100'} flex items-center justify-center mr-4 flex-shrink-0`}>
-                                  <FaMapMarkerAlt size={28} className="text-[#56a8c6]" />
-                                </div>
-                                <div className="min-w-0">
-                                  <h3 className={`text-[28px] font-bold ${colorMode === 'dark' ? 'text-white' : 'text-gray-900'} leading-tight`}>
-                                    {spotsList[currentSpotIndex].title || spotsList[currentSpotIndex].name}
-                                  </h3>
-                                  <p className={`${colorMode === 'dark' ? 'text-gray-400' : 'text-gray-600'} text-sm flex items-center mt-1 truncate`}>
-                                    <FaMapMarkerAlt className="mr-1 flex-shrink-0" size={12} />
-                                    <span className="truncate">{spotsList[currentSpotIndex].addr1 || spotsList[currentSpotIndex].address || '여행지'}</span>
-                                  </p>
-                                </div>
+                            <div className="flex items-start mb-3">
+                              <div className={`w-[60px] h-[60px] rounded-full ${colorMode === 'dark' ? 'bg-[#333]' : 'bg-gray-100'} flex items-center justify-center mr-4 flex-shrink-0`}>
+                                <FaMapMarkerAlt size={28} className="text-[#56a8c6]" />
+                              </div>
+                              <div className="min-w-0 overflow-hidden">
+                                <h3 className={`text-[28px] font-bold ${colorMode === 'dark' ? 'text-white' : 'text-gray-900'} leading-tight truncate`}>
+                                  {spotsList[currentSpotIndex].title || spotsList[currentSpotIndex].name}
+                                </h3>
+                                <p className={`${colorMode === 'dark' ? 'text-gray-400' : 'text-gray-600'} text-sm flex items-center mt-1 truncate`}>
+                                  <FaMapMarkerAlt className="mr-1 flex-shrink-0" size={12} />
+                                  <span className="truncate">{spotsList[currentSpotIndex].addr1 || spotsList[currentSpotIndex].address || '여행지'}</span>
+                                </p>
                               </div>
                             </div>
                             
-                            {/* 하단: 일차 및 코스 */}
-                            <div className="flex">
-                              <div className="mr-10">
-                                <p className={`${colorMode === 'dark' ? 'text-gray-300' : 'text-gray-500'} text-sm`}>일차</p>
-                                <p className={`${colorMode === 'dark' ? 'text-white' : 'text-gray-900'} text-[26px] font-bold`}>{activeDay}일차</p>
+                            {/* 정보 섹션 전체 재구성 */}
+                            <div className="mt-2 mb-12">
+                              {/* 일차와 코스 정보 - 한 줄에 배치 */}
+                              <div className="flex items-center mb-3">
+                                <p className={`${colorMode === 'dark' ? 'text-white' : 'text-gray-900'} text-[26px] font-bold mr-8`}>{activeDay}일차</p>
+                                
+                                <div className="flex items-center">
+                                  <p className={`${colorMode === 'dark' ? 'text-gray-300' : 'text-gray-500'} text-base mr-2`}>코스</p>
+                                  <p className={`${colorMode === 'dark' ? 'text-white' : 'text-gray-900'} text-[22px] font-medium`}>{currentSpotIndex+1}</p>
+                                </div>
                               </div>
-                              <div>
-                                <p className={`${colorMode === 'dark' ? 'text-gray-300' : 'text-gray-500'} text-sm`}>코스</p>
-                                <p className={`${colorMode === 'dark' ? 'text-white' : 'text-gray-900'} text-[26px] font-bold`}>{currentSpotIndex+1}</p>
-                              </div>
+                              
+                              {/* 이동수단별 시간 정보 */}
+                              {routeInfo && (
+                                <div className="flex gap-2 mb-3">
+                                  {routeInfo.driving && (
+                                    <div className={`flex items-center px-3 py-1.5 rounded-md ${colorMode === 'dark' ? 'bg-blue-900/40 text-blue-300' : 'bg-blue-100 text-blue-800'}`}>
+                                      <FaCar size={14} className="mr-1.5" />
+                                      <span className="text-sm font-medium">{routeInfo.driving.formattedDuration}</span>
+                                    </div>
+                                  )}
+                                  {routeInfo.transit && (
+                                    <div className={`flex items-center px-3 py-1.5 rounded-md ${colorMode === 'dark' ? 'bg-green-900/40 text-green-300' : 'bg-green-100 text-green-800'}`}>
+                                      <FaBus size={14} className="mr-1.5" />
+                                      <span className="text-sm font-medium">{routeInfo.transit.formattedDuration}</span>
+                                    </div>
+                                  )}
+                                  {routeInfo.walking && (
+                                    <div className={`flex items-center px-3 py-1.5 rounded-md ${colorMode === 'dark' ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-800'}`}>
+                                      <FaWalking size={14} className="mr-1.5" />
+                                      <span className="text-sm font-medium">{routeInfo.walking.formattedDuration}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                           
-                          {/* 수직 점선 구분선 */}
-                          <div className={`relative border-l-[3px] border-dashed ${colorMode === 'dark' ? 'border-[#444]' : 'border-gray-300'} h-full`}></div>
+                          {/* 세로 점선 구분선 - 티켓 디자인 (네모 디자인으로 변경) */}
+                          <div className="absolute top-0 bottom-0 h-[105%] z-20" style={{height: 'calc(100% + 10px)', top: '-5px', left: '70%', transform: 'translateX(-50%)'}}>
+                            {/* 점선 효과 강화 - 검은색으로 변경, 실선으로 */}
+                            <div className={`absolute top-0 bottom-0 left-0 border-l-2 h-full ${colorMode === 'dark' ? 'border-black' : 'border-black'}`}></div>
+                            
+                            {/* 티켓 절취선 네모 마크들 - 상단부터 하단까지 균일하게 배치 */}
+                            {Array.from({length: 35}).map((_, idx) => (
+                              <div 
+                                key={idx} 
+                                className={`absolute -left-[8px] w-[16px] h-[5px] ${colorMode === 'dark' ? 'bg-black' : 'bg-black'}`}
+                                style={{ top: `${idx * 3}%` }}
+                              ></div>
+                            ))}
+                          </div>
                           
                           {/* 오른쪽 티켓 섹션 */}
                           <div className="w-[30%] pl-[20px] pr-[20px] flex flex-col justify-between">
@@ -608,11 +937,56 @@ export default function TravelPlanDetail() {
                             </div>
                           </div>
                         </div>
+                        
+                        {/* 하단 영역: 출발지 정보 */}
+                        {(currentSpotIndex === 0 && departurePoint) || (currentSpotIndex > 0 && previousSpot) ? (
+                          <div className="py-2.5 mt-auto ml-1 mr-8 mb-1 pb-2 z-10 relative">
+                            <div className="flex w-[70%] pl-2 pr-6 py-0.5">
+                              <div className="flex-shrink-0 w-7 flex justify-center">
+                                <FaMapMarkerAlt size={15} className={`${colorMode === 'dark' ? 'text-blue-400' : 'text-blue-500'} mt-0.5`} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className={`text-sm ${colorMode === 'dark' ? 'text-blue-100' : 'text-gray-700'} truncate`}>
+                                  <span className="font-medium mr-1">출발지:</span>
+                                  {currentSpotIndex === 0 
+                                    ? departurePoint 
+                                    : (currentDeparturePoint && currentDeparturePoint !== departurePoint)
+                                      ? currentDeparturePoint
+                                      : (previousSpot?.addr1 || previousSpot?.address || (previousSpot?.title || previousSpot?.name))}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
+                        
+                        {/* 티켓 카드 로고 텍스트 - 카드 내부에 배치 */}
+                        <div 
+                          style={{
+                            position: 'absolute',
+                            bottom: '15px',
+                            right: '25px',
+                            zIndex: 100,
+                          }}
+                        >
+                          <span 
+                            style={{
+                              fontFamily: 'Arial, sans-serif',
+                              fontSize: '24px',
+                              fontWeight: '600',
+                              letterSpacing: '-0.5px',
+                              color: '#D25778', 
+                              lineHeight: '2',
+                              display: 'inline-block',
+                            }}
+                          >
+                            Tripplai
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                   
-                  {/* 슬라이드 화살표 버튼 - 3가지 모드별로 개별 디자인 */}
+                  {/* 슬라이드 화살표 버튼 */}
                   <div className="flex justify-between w-full absolute top-1/2 transform -translate-y-1/2 px-4">
                     {/* 이전 버튼 */}
                     <button 
@@ -637,7 +1011,7 @@ export default function TravelPlanDetail() {
                     </button>
                   </div>
                   
-                  {/* 하단 인디케이터 점도 모드별로 조정 */}
+                  {/* 하단 인디케이터 점 */}
                   <div className="flex justify-center mt-4 gap-2">
                     {spotsList.map((_, index) => {
                       let dotStyle = '';
@@ -689,7 +1063,7 @@ export default function TravelPlanDetail() {
             </div>
           </div>
           
-          {/* 숙소 정보도 동일한 패턴으로 수정 */}
+          {/* 숙소 정보 */}
           {accommodation && (
             <div className="mt-10">
               <h2 className={`text-2xl font-bold mb-6 flex items-center ${colorMode === 'dark' ? 'text-white' : 'text-gray-900'}`}>
@@ -740,8 +1114,20 @@ export default function TravelPlanDetail() {
                         </div>
                       </div>
                       
-                      {/* 수직 점선 구분선 */}
-                      <div className={`relative border-l-[3px] border-dashed ${colorMode === 'dark' ? 'border-[#444]' : 'border-gray-300'} h-full`}></div>
+                      {/* 세로 점선 구분선 - 티켓 디자인 (네모 디자인으로 변경) */}
+                      <div className="absolute top-0 bottom-0 h-[105%] z-20" style={{height: 'calc(100% + 10px)', top: '-5px', left: '70%', transform: 'translateX(-50%)'}}>
+                        {/* 점선 효과 강화 - 검은색으로 변경, 실선으로 */}
+                        <div className={`absolute top-0 bottom-0 left-0 border-l-2 h-full ${colorMode === 'dark' ? 'border-black' : 'border-black'}`}></div>
+                        
+                        {/* 티켓 절취선 네모 마크들 - 상단부터 하단까지 균일하게 배치 */}
+                        {Array.from({length: 35}).map((_, idx) => (
+                          <div 
+                            key={idx} 
+                            className={`absolute -left-[8px] w-[16px] h-[5px] ${colorMode === 'dark' ? 'bg-black' : 'bg-black'}`}
+                            style={{ top: `${idx * 3}%` }}
+                          ></div>
+                        ))}
+                      </div>
                       
                       {/* 오른쪽 티켓 섹션 */}
                       <div className="w-[30%] pl-[20px] pr-[20px] flex flex-col justify-between">
@@ -753,9 +1139,9 @@ export default function TravelPlanDetail() {
                         
                         {/* 중간 날짜 */}
                         <div className="text-right">
-                          <p className={`${colorMode === 'dark' ? 'text-gray-300' : 'text-gray-500'} text-sm mb-1`}>숙박일</p>
+                          <p className={`${colorMode === 'dark' ? 'text-gray-300' : 'text-gray-500'} text-sm mb-1`}>여행날짜</p>
                           <p className={`${colorMode === 'dark' ? 'text-white' : 'text-gray-900'} text-[16px]`}>
-                            {activeDay}일차
+                            {formatDateKorean(plan.startDate)}
                           </p>
                         </div>
                         
@@ -766,6 +1152,30 @@ export default function TravelPlanDetail() {
                         </div>
                       </div>
                     </div>
+                    
+                    {/* 숙소 카드 로고 텍스트 */}
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        bottom: '15px',
+                        right: '25px',
+                        zIndex: 100,
+                      }}
+                    >
+                      <span 
+                        style={{
+                          fontFamily: 'Arial, sans-serif',
+                          fontSize: '24px',
+                          fontWeight: '600',
+                          letterSpacing: '-0.5px',
+                          color: '#D25778', 
+                          lineHeight: '2',
+                          display: 'inline-block',
+                        }}
+                      >
+                        Tripplai
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -773,6 +1183,21 @@ export default function TravelPlanDetail() {
           )}
         </div>
       </div>
+      
+      {/* 출발지 설정 모달 */}
+      <DepartureModal
+        isOpen={isDepartureModalOpen}
+        onClose={() => {
+          console.log('모달 닫기');
+          setIsDepartureModalOpen(false);
+        }}
+        onSave={(newDeparture) => {
+          console.log('새 출발지 저장:', newDeparture);
+          saveDeparturePoint(newDeparture);
+        }}
+        currentDeparture={departurePoint}
+        colorMode={colorMode}
+      />
     </Layout>
   );
 }

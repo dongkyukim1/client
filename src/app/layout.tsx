@@ -12,7 +12,6 @@ import dynamic from "next/dynamic";
 import RQProvider from "@/components/providers/RQProvider"; 
 import { ThemeMode } from '@/hooks/useDarkMode'; 
 
-
 const KakaoScript = dynamic(() => import("../components/KakaoScript"), {
   ssr: false,
 });
@@ -136,6 +135,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        {/* 메타데이터를 head 태그 안에 직접 추가 */}
+        <title>Travel Planner</title>
+        <meta name="description" content="Plan your travel easily" />
+        {/* 카카오맵 API */}
+        <script
+          type="text/javascript"
+          src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_API_KEY}&libraries=services&autoload=false`}
+          async
+        ></script>
+      </head>
       <body className={inter.className} suppressHydrationWarning>
         <ThemeInitializer />
         <KakaoScript />
