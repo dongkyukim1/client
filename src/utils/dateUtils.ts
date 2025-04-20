@@ -48,22 +48,22 @@ export function getNext12Months(): { year: number; month: number }[] {
   return months;
 }
 
-/** 주어진 년도와 월의 날짜 배열을 반환 */
-export function getDaysForMonth(year: number, month: number): string[] {
-  const firstDay = new Date(year, month - 1, 1);
-  const firstWeekday = firstDay.getDay(); // 0 (일) ~ 6 (토)
+export function getDaysForMonth(year: number, month: number): (number | null)[] {
+  const days: (number | null)[] = [];
+
+  // JS Date는 0-based month니까 -1 해줘야 함
+  const date = new Date(year, month - 1, 1);
+  const firstDay = date.getDay(); // 0: 일요일 ~ 6: 토요일
   const lastDate = new Date(year, month, 0).getDate(); // 마지막 날짜
 
-  const days: string[] = [];
-
-  // 앞에 빈 칸 채우기 (시작 요일 맞추기용)
-  for (let i = 0; i < firstWeekday; i++) {
-    days.push("");
+  // 앞에 빈 칸 추가 (예: 수요일 시작이면 [null, null])
+  for (let i = 0; i < firstDay; i++) {
+    days.push(null);
   }
 
   // 날짜 채우기
-  for (let day = 1; day <= lastDate; day++) {
-    days.push(day.toString());
+  for (let i = 1; i <= lastDate; i++) {
+    days.push(i);
   }
 
   return days;

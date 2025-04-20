@@ -8,6 +8,8 @@ import { signOut, useSession } from "next-auth/react";
 import Button from "@/components/common/Button";
 import useThemeMode, { ThemeMode } from "@/hooks/useDarkMode";
 import dynamic from "next/dynamic";
+import clsx from "clsx"; //디자인 추가
+
 
 const logo = process.env.NEXT_PUBLIC_SERVICE_NAME;
 
@@ -16,6 +18,7 @@ const NavSection = () => {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [isFestivalMenuOpen, setIsFestivalMenuOpen] = useState(false);
   const { data: session } = useSession();
   const { themeMode, cycleTheme, isLoading } = useThemeMode();
 
@@ -114,7 +117,7 @@ const NavSection = () => {
 
   // 테마에 따른 아이콘과 색상 결정
   const getThemeIcon = () => {
-    switch (themeMode) {
+    switch (themeMode) { 
       case "dark":
         return <FaMoon className="text-white text-lg" />;
       case "light":
@@ -253,12 +256,46 @@ const NavSection = () => {
         </div>
 
         <div className="flex items-center gap-1 md:gap-3">
-          <Link
-            href="/festival"
-            className="hidden md:block text-gray-600 text-sm font-medium hover:text-gray-900 px-3 py-2 rounded-full hover:bg-gray-50 transition-colors"
+          {/* ✅ 축제 드롭다운 메뉴 */}
+          <div
+            className="relative hidden md:block"
+            onMouseEnter={() => setIsFestivalMenuOpen(true)}
+            onMouseLeave={() => setIsFestivalMenuOpen(false)}
           >
-            축제
-          </Link>
+            <span
+              className={clsx(
+                "text-sm font-medium px-3 py-2 rounded-full hover:bg-gray-50 transition-colors",
+                themeMode === "dark"
+                  ? "text-white hover:bg-gray-800"
+                  : "text-gray-600 hover:text-gray-900"
+              )}
+            >
+              축제
+            </span>
+
+            {isFestivalMenuOpen && (
+              <div className="absolute top-full left-0 mt-1 w-40 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md z-50">
+                <Link
+                  href="/festival/list"
+                  className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-white"
+                >
+                  축제 리스트
+                </Link>
+                <Link
+                  href="/festival/map"
+                  className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-white"
+                >
+                  축제 지도
+                </Link>
+                <Link
+                  href="/festival/calendar"
+                  className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-white"
+                >
+                  축제 달력
+                </Link>
+              </div>
+            )}
+          </div>
           <Link href="/recommendation" className={getLinkClasses()}>
             여행 코스
           </Link>
