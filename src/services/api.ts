@@ -31,8 +31,6 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// 이력서 API 삭제
-
 // TravelRecommendation 타입 정의
 interface TravelPlanData {
   destination: string;
@@ -180,5 +178,33 @@ export const infoApi = {
   /** 회원 정보 수정하기 */
   updateInfo: () => {
 
+  },
+}
+
+export const paymentApi = {
+  /** 결제 임시 저장 */
+  payTempStore: (orderId: string, amount: string) => {
+    return api.post('/api/temp', {
+      orderId,
+      amount
+    })
+  },
+
+  /** 결제 임시 저장 확인 */
+  payTempCheck: (orderId: string, amount: string) => {
+    return api.get('/api/temp', {
+      // todo api 수정 필요 
+      orderId,
+      amount
+    })
+  },
+
+  /** 결제 확인 */
+  payConfirm: (paymentKey: string, orderId: string, amount: string) => {
+    return api.post('/api/confirm', {
+      paymentKey,
+      orderId,
+      amount
+    })
   },
 }
