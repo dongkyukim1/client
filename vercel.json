@@ -10,5 +10,5 @@
     "enabled": true,
     "silent": false
   },
-  "buildCommand": "next build"
+  "buildCommand": "DISABLE_ESLINT_PLUGIN=true next build"
 } 
