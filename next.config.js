@@ -5,45 +5,19 @@ const nextConfig = {
   transpilePackages: ['@chakra-ui/react', '@chakra-ui/next-js'],
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'randomuser.me',
-      },
-      {
-        protocol: 'http',
-        hostname: 'tong.visitkorea.or.kr',
-      },
-      {
-        protocol: 'https',
-        hostname: 'tong.visitkorea.or.kr',
-      },
-      {
-        protocol: 'https',
-        hostname: 'api.visitkorea.or.kr',
-      },
-      {
-        protocol: 'https',
-        hostname: 'korean.visitkorea.or.kr',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.visitkorea.or.kr',
-      },
-      {
-        protocol: 'https',
-        hostname: 'cdn.pixabay.com',
-      }
+      { protocol: 'https', hostname: 'randomuser.me' },
+      { protocol: 'http', hostname: 'tong.visitkorea.or.kr' },
+      { protocol: 'https', hostname: 'tong.visitkorea.or.kr' },
+      { protocol: 'https', hostname: 'api.visitkorea.or.kr' },
+      { protocol: 'https', hostname: 'korean.visitkorea.or.kr' },
+      { protocol: 'https', hostname: 'www.visitkorea.or.kr' },
+      { protocol: 'https', hostname: 'cdn.pixabay.com' }
     ],
     domains: ['cdn.pixabay.com', 'apis.data.go.kr'],
     unoptimized: true
   },
-  experimental: {
-    // Enable App Router with Server Components
-    appDir: true,
-    // Enable Turbopack
-    turbo: {},
-    serverComponentsExternalPackages: ['tesseract.js'],
-  },
+  turbo: {}, // 
+  serverExternalPackages: ['tesseract.js'], // 
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
@@ -59,4 +33,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig; 
+module.exports = nextConfig;
