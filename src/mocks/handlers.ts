@@ -24,7 +24,7 @@ const members = [
 export const handlers = [
   // 이메일 중복 체크
   http.post(`${API_URL}/email-check`, async ({ request }) => {
-    const { email } = await request.json();
+    const { email } = await request.json() as { email: string };
     const isExist = members.some(m => m.email === email);
 
     const success = HttpResponse.json({
@@ -42,7 +42,7 @@ export const handlers = [
 
   // 인증 번호 확인
   http.post(`${API_URL}/certification`, async ({ request }) => {
-    const { certification } = await request.json();
+    const { certification } = await request.json() as { certification: string };
     const success = HttpResponse.json({
       code: "SU",
       message: "Success",
@@ -59,7 +59,7 @@ export const handlers = [
 
   // 회원 정보 가져오기
   http.post(`${API_URL}/member`, async ({ request }) => {
-    const { email } = await request.json();
+    const { email } = await request.json() as { email: string };
 
     const success = HttpResponse.json({
       code: "SU",

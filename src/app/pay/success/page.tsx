@@ -5,26 +5,22 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 interface Props {
-  params: {
-    orderId: string;
-    amount: string;
-    paymentKey: string;
-  };
+  params: Promise<{ orderId: string; amount: string; paymentKey: string }>;
 }
 
-export default function SuccessPage({ params }: Props) {
+export default async function SuccessPage({ params }: Props) {
   const router = useRouter();
-  const { orderId, amount, paymentKey } = params;
+  const { orderId, amount, paymentKey } = await params;
 
   useEffect(() => {
     async function pay() {
       // todo api 연결 후 오는 값 활용 하여 로직 적용
       const payTempCheckRes = paymentApi.payTempCheck(orderId, amount);
-      const payConfirmRes = paymentApi.payConfirm(paymentKey, orderId, amount);
+      const payConfirmRes = await paymentApi.payConfirm(paymentKey, orderId, amount);
 
-      if (!payConfirmRes.code === "SU") {
+      if (payConfirmRes.data.code !== "SU") {
         // 결제 실패 비즈니스 로직을 구현하세요.
-        router.push(`/pay/fail?message=${payConfirmRes.message}&code=${payConfirmRes.code}`);
+        router.push(`/pay/fail?message=${payConfirmRes.data.message}&code=${payConfirmRes.data.code}`);
         return;
       }
 

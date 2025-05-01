@@ -1,12 +1,9 @@
 interface Props {
-  params: {
-    code: string;
-    message: string;
-  };
+  params: Promise<{ code: string; message: string }>;
 }
 
-export default function FailPage({ params }: Props) {
-  const { code, message } = params;
+export default async function FailPage({ params }: Props) {
+  const { code, message } = await params;
   return (
     <div className="result wrapper">
       <div className="box_section">

@@ -192,7 +192,7 @@ export const paymentApi = {
 
   /** 결제 임시 저장 확인 */
   payTempCheck: (orderId: string, amount: string) => {
-    return api.get('/api/temp', {
+    return api.post('/api/temp', {
       // todo api 수정 필요 
       orderId,
       amount

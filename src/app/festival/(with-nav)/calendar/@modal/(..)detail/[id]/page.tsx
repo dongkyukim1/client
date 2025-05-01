@@ -1,13 +1,10 @@
 import FestivalDetail from "@/app/festival/_components/FestivalDetail";
 import ModalWrapper from "@/app/festival/_components/ModalWrapper";
-import type { Metadata } from 'next';
 
-type PageParams = {
-  id: string;
-};
+type Params = Promise<{ id: string }>;
 
-export default function Page(props: any) {
-  const id = props.params.id;
+export default async function Page({ params }: { params: Params }) {
+  const { id } = await params;
 
   return (
     <ModalWrapper>
