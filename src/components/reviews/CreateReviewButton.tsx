@@ -1,28 +1,52 @@
 "use client";
 
-import { useState } from 'react';
-import { FaPlus } from 'react-icons/fa';
-import CreateReviewModal from '@/components/reviews/CreateReviewModal';
+import { useState } from "react";
+import { FaPlus } from "react-icons/fa";
+import CreateReviewModal from "@/components/reviews/CreateReviewModal";
 
 export default function CreateReviewButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  const handleSubmit = async (reviewData: any) => {
+
+  const handleSubmit = async (reviewData: any, proofImage?: File | null, reviewImages?: File[]) => {
     try {
-      // 여기에 리뷰 데이터 서버 전송 로직을 추가하세요
-      console.log('리뷰 데이터:', reviewData);
-      
-      // 실제 API가 없으므로 성공 메시지만 표시
-      alert('리뷰가 성공적으로 등록되었습니다!');
-      
-      // 필요하다면 페이지 새로고침 또는 리뷰 목록 업데이트
+      const images: string[] = [];
+
+      if (reviewImages && reviewImages.length > 0) {
+        for (const file of reviewImages) {
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          images.push(base64);
+        }
+      }
+
+      const newReview = {
+        ...reviewData,
+        id: Date.now().toString(),
+        images,
+        author: {
+          name: "사용자",
+          avatar: "/images/default-profile.png"
+        },
+        tags: []
+      };
+
+      const stored = localStorage.getItem("localReviews");
+      const parsed = stored ? JSON.parse(stored) : [];
+      parsed.unshift(newReview);
+      localStorage.setItem("localReviews", JSON.stringify(parsed));
+
+      alert("리뷰가 성공적으로 등록되었습니다!");
       window.location.reload();
     } catch (error) {
-      console.error('리뷰 등록 실패:', error);
-      alert('리뷰 등록에 실패했습니다. 다시 시도해주세요.');
+      console.error("리뷰 등록 실패:", error);
+      alert("리뷰 등록에 실패했습니다.");
     }
   };
-  
+
   return (
     <>
       <button
@@ -32,12 +56,13 @@ export default function CreateReviewButton() {
         <FaPlus className="mr-2" size={14} />
         <span>리뷰 작성하기</span>
       </button>
-      
-      <CreateReviewModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onSubmit={handleSubmit} 
+
+      <CreateReviewModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+        requireProofImage={true}
       />
     </>
   );
-} 
+}

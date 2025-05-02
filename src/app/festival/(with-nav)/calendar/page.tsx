@@ -195,7 +195,7 @@ export default function Calendar() {
               className="w-full px-4 py-2 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400 transition"
             />
             {suggestions.length > 0 && (
-              <ul className="absolute z-[9999] w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
+              <ul className="list-none absolute z-[9999] w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
                 {suggestions.map((suggestion, index) => (
                   <li
                     key={index}

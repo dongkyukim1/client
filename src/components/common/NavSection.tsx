@@ -264,7 +264,7 @@ const NavSection = () => {
           >
             <span
               className={clsx(
-                "text-sm font-medium px-3 py-2 rounded-full hover:bg-gray-50 transition-colors",
+                "text-sm font-medium px-3 py-2 hover:bg-gray-50 transition-colors",
                 themeMode === "dark"
                   ? "text-white hover:bg-gray-800"
                   : "text-gray-600 hover:text-gray-900"
@@ -305,12 +305,12 @@ const NavSection = () => {
           <Link href="/reviews" className={getLinkClasses()}>
             리뷰보기
           </Link>
+
           <Link href="/dashboard" className="hidden md:block">
             <Button variant="outline" size="sm" className={`font-medium font-semibold ${getDashboardTextClass()}`}>
               <span>AI 여행 계획</span>
             </Button>
           </Link>
-
           <Link href="/dashboard" className="md:hidden">
             <Button variant="primary" size="sm" className="text-xs border-0">
               AI 여행

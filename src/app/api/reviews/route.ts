@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { mockReviews } from '@/data/mockReviews';
 
-// 특정 위치에 대한 실제 존재하는 이미지 수 매핑
+// ✨ 모의 데이터 추가 가능하도록 복제본 만들기
+let reviewsDB = [...mockReviews];
+
+// 특정 위치에 대한 이미지 수 매핑
 const locationImageCounts: Record<string, number> = {
   '제주도': 3,
   '서울': 2,
@@ -11,74 +14,82 @@ const locationImageCounts: Record<string, number> = {
   '강원도': 2
 };
 
-// GET 요청 처리 - 리뷰 목록 가져오기
+// ✅ 리뷰 목록 조회 (GET)
 export async function GET(request: NextRequest) {
   try {
-    // URL 파라미터 가져오기
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('pageSize') || '12');
     const location = searchParams.get('location') || '';
     const tag = searchParams.get('tag') || '';
 
-    // 필터링
-    let filteredReviews = [...mockReviews];
+    let filteredReviews = [...reviewsDB];
     
     if (location) {
-      filteredReviews = filteredReviews.filter(review => 
+      filteredReviews = filteredReviews.filter(review =>
         review.location.toLowerCase().includes(location.toLowerCase())
       );
     }
-    
     if (tag) {
-      filteredReviews = filteredReviews.filter(review => 
-        review.tags.some((t: string) => t.toLowerCase().includes(tag.toLowerCase()))
-      );
+      filteredReviews = filteredReviews.filter(review =>
+        review.tags.some((t: string) => t.toLowerCase().includes(tag.toLowerCase())
+      ));
     }
-    
-    // 각 리뷰의 이미지 수 조정
+
+    // 이미지 갯수 조정
     filteredReviews = filteredReviews.map(review => {
-      let imageLimitCount = 2; // 기본값
-      
-      // 위치 기반으로 적절한 이미지 수 찾기
+      let imageLimitCount = 2;
       for (const [loc, count] of Object.entries(locationImageCounts)) {
         if (review.location.includes(loc)) {
           imageLimitCount = count;
           break;
         }
       }
-      
-      // 이미지 배열 길이 조정
-      const adjustedImages = review.images.slice(0, imageLimitCount);
-      
       return {
         ...review,
-        images: adjustedImages
+        images: review.images.slice(0, imageLimitCount)
       };
     });
-    
-    // 페이지네이션
+
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const paginatedReviews = filteredReviews.slice(startIndex, endIndex);
-    
-    // 응답 데이터 구성
-    const response = {
+
+    return NextResponse.json({
       reviews: paginatedReviews,
       totalCount: filteredReviews.length,
       page,
       pageSize
-    };
-    
-    // 실제 API 호출처럼 약간의 지연 추가
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    return NextResponse.json(response);
+    });
   } catch (error) {
     console.error('리뷰 목록 API 오류:', error);
-    return NextResponse.json(
-      { error: '리뷰 목록을 가져오는 중 오류가 발생했습니다.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: '리뷰 목록을 가져오는 중 오류가 발생했습니다.' }, { status: 500 });
   }
-} 
+}
+
+// ✅ 리뷰 작성 (POST)
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    console.log('새 리뷰 데이터:', body);
+
+    const newReview = {
+      id: String(Date.now()), // 간단하게 timestamp를 ID로
+      ...body,
+      images: body.images || [],
+      tags: body.tags || [],
+      author: {
+        name: "사용자",
+        avatar: "/images/default-profile.png"
+      }
+    };
+
+    reviewsDB.unshift(newReview); // ✨ 맨 앞에 추가
+    console.log('현재 리뷰 목록 수:', reviewsDB.length);
+
+    return NextResponse.json({ message: '리뷰가 성공적으로 등록되었습니다.', review: newReview }, { status: 201 });
+  } catch (error) {
+    console.error('리뷰 작성 API 오류:', error);
+    return NextResponse.json({ error: '리뷰 작성 중 오류가 발생했습니다.' }, { status: 500 });
+  }
+}
