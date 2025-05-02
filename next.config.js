@@ -13,7 +13,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'www.visitkorea.or.kr' },
       { protocol: 'https', hostname: 'cdn.pixabay.com' }
     ],
-    domains: ['cdn.pixabay.com', 'apis.data.go.kr'],
+    domains: ['cdn.pixabay.com', 'apis.data.go.kr', 'tong.visitkorea.or.kr', '43.200.177.95'],
     unoptimized: true
   },
   webpack: (config) => {
@@ -28,6 +28,14 @@ const nextConfig = {
       crypto: false,
     };
     return config;
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://43.200.177.95/api/:path*', // 실제 API 서버
+      },
+    ];
   },
 }
 

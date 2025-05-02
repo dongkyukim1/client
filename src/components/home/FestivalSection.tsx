@@ -1,70 +1,86 @@
 'use client'
 
-import { Box, Container, Heading, Image, Text } from '@chakra-ui/react'
+import { Box, Container, Heading, Image, Text, Spinner, Center } from '@chakra-ui/react'
 import { FaMapMarkerAlt, FaClock } from 'react-icons/fa'
 import Link from 'next/link'
 import Button from '@/components/common/Button'
+import { useState, useEffect } from 'react'
 
-const recommendedCourses = [
-  {
-    id: 1,
-    title: '서울 역사 탐방 3일 코스',
-    duration: '3일 코스',
-    location: '서울 종로, 중구',
-    image: '/images/seoul-course.png'
-  },
-  {
-    id: 2,
-    title: '부산 해변 힐링 4일 코스',
-    duration: '4일 코스',
-    location: '부산 해운대, 광안리',
-    image: '/images/busan-course.png'
-  },
-  {
-    id: 3,
-    title: '제주 자연 완전정복 5일 코스',
-    duration: '5일 코스',
-    location: '제주 전역',
-    image: '/images/jeju-course.png'
-  },
-  {
-    id: 4,
-    title: '경주 역사 문화 2일 코스',
-    duration: '2일 코스',
-    location: '경주 시내 및 근교',
-    image: '/images/gyeongju-course.jpg'
-  },
-  {
-    id: 5,
-    title: '강원도 산과 바다 4일 코스',
-    duration: '4일 코스',
-    location: '강릉, 속초, 평창',
-    image: '/images/kangwon.png'
-  },
-  {
-    id: 6,
-    title: '전주 맛집 투어 2일 코스',
-    duration: '2일 코스',
-    location: '전주 한옥마을, 시내',
-    image: '/images/jeonju-course.png'
-  },
-  {
-    id: 7,
-    title: '통영 섬 여행 3일 코스',
-    duration: '3일 코스',
-    location: '통영 시내 및 섬',
-    image: '/images/tongyeong-course.jpg'
-  },
-  {
-    id: 8,
-    title: '여수 밤바다 로맨틱 2일 코스',
-    duration: '2일 코스',
-    location: '여수 시내, 오동도',
-    image: '/images/yeosu-course.jpg'
-  }
-]
+// API 응답 타입 정의
+interface Course {
+  courseId: number
+  contentId: string
+  thumbnailUrl: string
+  title: string
+  area: string
+  likeCount: number
+  rating?: number
+}
 
 export default function RecommendedCoursesSection() {
+  const [courses, setCourses] = useState<Course[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/course', {
+          mode: 'cors',
+          cache: 'no-store',
+        })
+        
+        const data = await response.json()
+        console.log('API 응답 데이터:', data)
+        
+        if (Array.isArray(data) && data.length > 0) {
+          setCourses(data.slice(0, 8))
+        } else {
+          console.warn('데이터가 비어있거나 배열이 아닙니다:', data)
+          setCourses([])
+        }
+        
+        setIsLoading(false)
+      } catch (err) {
+        console.error('API 요청 오류:', err)
+        setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다')
+        setIsLoading(false)
+      }
+    }
+
+    fetchCourses()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <Box as="section" className="section" id="recommended-courses">
+        <Container className="section-container">
+          <Heading as="h2" className="section-title">
+            추천 인기 여행 코스
+          </Heading>
+          <Center my={10}>
+            <Spinner size="xl" />
+          </Center>
+        </Container>
+      </Box>
+    )
+  }
+
+  if (error) {
+    return (
+      <Box as="section" className="section" id="recommended-courses">
+        <Container className="section-container">
+          <Heading as="h2" className="section-title">
+            추천 인기 여행 코스
+          </Heading>
+          <Center my={10}>
+            <Text color="red.500">{error}</Text>
+          </Center>
+        </Container>
+      </Box>
+    )
+  }
+
   return (
     <Box as="section" className="section" id="recommended-courses">
       <Container className="section-container">
@@ -85,12 +101,12 @@ export default function RecommendedCoursesSection() {
         </Box>
         
         <Box className="festival-grid">
-          {recommendedCourses.map((course) => (
-            <Link key={course.id} href={`/travel/popular/${course.id}`} style={{ textDecoration: 'none' }}>
+          {courses.map((course) => (
+            <Link key={course.courseId} href={`/travel/popular/${course.courseId}`} style={{ textDecoration: 'none' }}>
               <Box className="festival-card" cursor="pointer" _hover={{ transform: 'translateY(-5px)', transition: 'transform 0.3s ease' }}>
                 <Box className="festival-image">
                   <Image
-                    src={course.image}
+                    src={course.thumbnailUrl}
                     alt={course.title}
                   />
                 </Box>
@@ -100,11 +116,11 @@ export default function RecommendedCoursesSection() {
                   </Text>
                   <Box className="festival-date" display="flex" alignItems="center">
                     <Box as={FaClock} mr={2} />
-                    <Text>{course.duration}</Text>
+                    <Text>{course.rating ? `평점: ${course.rating}` : '새로운 코스'}</Text>
                   </Box>
                   <Box className="festival-location" display="flex" alignItems="center">
                     <Box as={FaMapMarkerAlt} className="festival-location-icon" />
-                    <Text>{course.location}</Text>
+                    <Text>{course.area}</Text>
                   </Box>
                 </Box>
               </Box>

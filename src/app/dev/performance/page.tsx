@@ -9,8 +9,9 @@ export interface AuthMetric {
   timestamp: number;
 }
 
-export default function PerformancePage() {
-  // 임시 데이터로 대체 (실제로는 API에서 가져오거나 상태로 관리)
+// 여기만 async 붙여줌!
+export default async function PerformancePage() {
+  // 임시 데이터
   const authMetrics: AuthMetric[] = [
     {
       endpoint: '/api/auth/login',
@@ -29,7 +30,7 @@ export default function PerformancePage() {
   return (
     <div className="mt-8 bg-white shadow-md rounded-lg p-6">
       <h2 className="text-lg font-medium mb-4">인증 API 성능</h2>
-      
+
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
@@ -70,4 +71,4 @@ export default function PerformancePage() {
       </div>
     </div>
   );
-} 
+}

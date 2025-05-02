@@ -11,7 +11,9 @@ import {
   HStack, 
   Icon, 
   useToast,
-  useColorModeValue 
+  useColorModeValue,
+  Spinner,
+  Center
 } from '@chakra-ui/react'
 import { FaHeart, FaRegHeart } from 'react-icons/fa'
 import { BsArrowUpRight } from 'react-icons/bs'
@@ -20,120 +22,22 @@ import NavSection from '@/components/common/NavSection'
 import Footer from '@/components/common/Footer'
 import { useSession } from 'next-auth/react'
 
-// 데이터 타입
-interface TravelCourse {
-  id: number
+// API 응답 타입 정의
+interface Course {
+  courseId: number
+  contentId: string
+  thumbnailUrl: string
   title: string
-  location: string
-  image: string
-  locationShort: string
-  description: string
+  area: string
+  likeCount: number
+  rating?: number
 }
 
-// 임시 데이터
-const travelCourses: TravelCourse[] = [
-  {
-    id: 1,
-    title: '서울 역사 탐방 3일 코스',
-    location: '서울 종로, 중구',
-    image: '/images/seoul-course.png',
-    locationShort: 'SEOUL',
-    description: '경복궁, 창덕궁 등 서울의 고궁과 역사를 만나는 3일간의 특별한 시간.'
-  },
-  {
-    id: 2,
-    title: '부산 해변 힐링 4일 코스',
-    location: '부산 해운대, 광안리',
-    image: '/images/busan-course.png',
-    locationShort: 'BUSAN',
-    description: '해운대와 광안리의 푸른 바다를 보며 즐기는 낭만 가득 힐링 여행.'
-  },
-  {
-    id: 3,
-    title: '제주 자연 완전정복 5일 코스',
-    location: '제주 전역',
-    image: '/images/jeju-course.png',
-    locationShort: 'JEJU',
-    description: '한라산부터 푸른 바다까지, 제주도의 아름다운 자연을 만끽하는 5일.'
-  },
-  {
-    id: 4,
-    title: '경주 역사 문화 2일 코스',
-    location: '경주 시내 및 근교',
-    image: '/images/gyeongju-course.jpg',
-    locationShort: 'GYEONGJU',
-    description: '신라 천년의 숨결, 불국사와 석굴암 등 경주의 역사를 따라 걷는 여행.'
-  },
-  {
-    id: 5,
-    title: '강원도 산과 바다 4일 코스',
-    location: '강릉, 속초, 평창',
-    image: '/images/kangwon.png',
-    locationShort: 'GANGWON',
-    description: '설악산의 웅장함과 동해의 푸르름을 동시에 즐기는 강원도 일주 코스.'
-  },
-  {
-    id: 6,
-    title: '전주 맛집 투어 2일 코스',
-    location: '전주 한옥마을, 시내',
-    image: '/images/jeonju-course.png',
-    locationShort: 'JEONJU',
-    description: '한옥의 정취와 맛있는 음식이 가득한 전주에서의 미식 기행.'
-  },
-  // 추가 한국 여행 코스 목업 데이터
-  {
-    id: 7,
-    title: '울산 영남 알프스 트레킹 3일 코스',
-    location: '울산 울주군',
-    image: '/images/ulsan.jpeg', // 실제 사용시 적절한 이미지로 교체
-    locationShort: 'ULSAN',
-    description: '영남 알프스의 아름다운 산맥을 따라 걷는 건강한 트레킹 여행.'
-  },
-  {
-    id: 8,
-    title: '안동 전통문화 체험 2일 코스',
-    location: '안동 하회마을, 도산서원',
-    image: '/images/andong.png', // 실제 사용시 적절한 이미지로 교체
-    locationShort: 'ANDONG',
-    description: '하회마을과 도산서원에서 만나는 한국의 전통 문화와 선비 정신.'
-  },
-  {
-    id: 9,
-    title: '여수 해양 여행 3일 코스',
-    location: '여수 엑스포, 오동도',
-    image: '/images/yeosu-course.jpg', // 실제 사용시 적절한 이미지로 교체
-    locationShort: 'YEOSU',
-    description: '아름다운 밤바다와 갓 잡은 해산물이 기다리는 여수 바다 여행.'
-  },
-  {
-    id: 10,
-    title: '담양 죽녹원 힐링 2일 코스',
-    location: '담양 죽녹원, 메타세쿼이아길',
-    image: '/images/danyang.jpg', // 실제 사용시 적절한 이미지로 교체
-    locationShort: 'DAMYANG',
-    description: '대나무 숲길과 메타세쿼이아 가로수길에서 느끼는 자연의 평온함.'
-  },
-  {
-    id: 11,
-    title: '통영 예술 투어 3일 코스',
-    location: '통영 동피랑, 서피랑',
-    image: '/images/kangwon.png', // 실제 사용시 적절한 이미지로 교체
-    locationShort: 'TONGYEONG',
-    description: '예술의 도시 통영에서 즐기는 문화와 예술, 그리고 싱싱한 해산물.'
-  },
-  {
-    id: 12,
-    title: '경북 청송 자연 힐링 4일 코스',
-    location: '청송 주왕산, 얼음골',
-    image: '/images/jeonju-course.png', // 실제 사용시 적절한 이미지로 교체
-    locationShort: 'CHEONGSEONG',
-    description: '주왕산 국립공원과 청송 얼음골에서 맛보는 깨끗한 자연의 선물.'
-  }
-]
-
 export default function PopularCoursesPage() {
-  const [courses] = useState<TravelCourse[]>(travelCourses)
+  const [courses, setCourses] = useState<Course[]>([])
   const [likedCourses, setLikedCourses] = useState<number[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const toast = useToast()
   const { data: session } = useSession()
 
@@ -143,6 +47,28 @@ export default function PopularCoursesPage() {
   const textColor = useColorModeValue('black', 'white')
   const borderColor = useColorModeValue('black', 'cyan.400')
   const shadowColor = useColorModeValue('black', 'cyan')
+
+  // 코스 데이터 가져오기
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch('/api/course')
+        
+        if (!response.ok) {
+          throw new Error('코스 데이터를 불러오는 중 오류가 발생했습니다')
+        }
+        
+        const data = await response.json()
+        setCourses(data)
+        setIsLoading(false)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다')
+        setIsLoading(false)
+      }
+    }
+
+    fetchCourses()
+  }, [])
 
   // 찜 목록 불러오기
   useEffect(() => {
@@ -189,6 +115,38 @@ export default function PopularCoursesPage() {
     
     setLikedCourses(newLikedCourses)
     localStorage.setItem('likedCourses', JSON.stringify(newLikedCourses))
+  }
+
+  if (isLoading) {
+    return (
+      <>
+        <NavSection />
+        <Box bg={bgColor} pt="100px" pb="50px" minH="100vh">
+          <Container maxW="container.xl">
+            <Center my={10}>
+              <Spinner size="xl" />
+            </Center>
+          </Container>
+        </Box>
+        <Footer />
+      </>
+    )
+  }
+
+  if (error) {
+    return (
+      <>
+        <NavSection />
+        <Box bg={bgColor} pt="100px" pb="50px" minH="100vh">
+          <Container maxW="container.xl">
+            <Center my={10}>
+              <Text color="red.500">{error}</Text>
+            </Center>
+          </Container>
+        </Box>
+        <Footer />
+      </>
+    )
   }
 
   return (
@@ -251,7 +209,7 @@ export default function PopularCoursesPage() {
           >
             {courses.map(course => (
               <Box 
-                key={course.id}
+                key={course.courseId}
                 position="relative"
                 border="1px solid"
                 borderColor={borderColor}
@@ -276,7 +234,7 @@ export default function PopularCoursesPage() {
                 {/* 이미지 영역 - 비율 조정 */}
                 <Box position="relative" height="52%" overflow="hidden">
                   <Image
-                    src={course.image}
+                    src={course.thumbnailUrl}
                     alt={course.title}
                     objectFit="cover"
                     width="100%"
@@ -296,7 +254,7 @@ export default function PopularCoursesPage() {
                     borderRadius="sm"
                     letterSpacing="0.5px"
                   >
-                    {course.locationShort}
+                    {course.area.split(' ')[0]?.toUpperCase() || course.area}
                   </Box>
                 </Box>
 
@@ -330,18 +288,31 @@ export default function PopularCoursesPage() {
                       {course.title}
                     </Heading>
 
-                    {/* 간단 소개 - 텍스트 정렬 개선 */}
+                    {/* 간단 소개 - 지역과 좋아요 수 표시 */}
                     <Text 
                       fontSize="0.85rem" 
                       color={textColor} 
                       opacity={0.85}
-                      noOfLines={2} 
+                      noOfLines={1} 
+                      lineHeight="1.6"
+                      letterSpacing="-0.2px"
+                      textAlign="center"
+                      width="100%"
+                      mb={1}
+                    >
+                      {course.area}
+                    </Text>
+                    <Text 
+                      fontSize="0.85rem" 
+                      color={textColor} 
+                      opacity={0.85}
+                      noOfLines={1} 
                       lineHeight="1.6"
                       letterSpacing="-0.2px"
                       textAlign="center"
                       width="100%"
                     >
-                      {course.description}
+                      좋아요: {course.likeCount}
                     </Text>
                   </Box>
 
@@ -352,7 +323,7 @@ export default function PopularCoursesPage() {
                     spacing={0} 
                     mt={4}
                   >
-                    <Link href={`/travel/popular/${course.id}`} style={{ flexGrow: 1 }}>
+                    <Link href={`/travel/popular/${course.courseId}`} style={{ flexGrow: 1 }}>
                       <Flex
                         p={2.5}
                         alignItems="center"
@@ -379,13 +350,13 @@ export default function PopularCoursesPage() {
                       borderLeft="1px solid"
                       borderColor={borderColor}
                       cursor="pointer"
-                      onClick={(e) => toggleLike(course.id, e)}
+                      onClick={(e) => toggleLike(course.courseId, e)}
                       _hover={{ bg: 'gray.100' }}
                       w="42px"
                     >
                       <Icon 
-                        as={likedCourses.includes(course.id) ? FaHeart : FaRegHeart} 
-                        color={likedCourses.includes(course.id) ? "red.500" : "gray.500"} 
+                        as={likedCourses.includes(course.courseId) ? FaHeart : FaRegHeart} 
+                        color={likedCourses.includes(course.courseId) ? "red.500" : "gray.500"} 
                         fontSize="1rem"
                       />
                     </Flex>

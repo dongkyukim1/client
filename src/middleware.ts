@@ -7,9 +7,12 @@ export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
 
     // 로그인이 필요한 페이지
-    const protectedRoutes = ["/dashboard", "/travel"];
+    const protectedRoutes = ["/dashboard", "/travel/create"];
 
-    if (!token && protectedRoutes.some(route => pathname.startsWith(route)))
+    // 단일 travel ID 페이지는 공개 접근 허용 (/travel/[id])
+    const isPublicTravelPage = /^\/travel\/[^/]+$/.test(pathname);
+
+    if (!token && protectedRoutes.some(route => pathname.startsWith(route)) && !isPublicTravelPage)
         return NextResponse.redirect(new URL("/login", req.url));
 
 
