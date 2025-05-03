@@ -57,6 +57,7 @@ import NavSection from "@/components/common/NavSection";
 import Footer from "@/components/common/Footer";
 import Link from "next/link";
 import NextImage from "next/image";
+import { getBestTravelSeason, getShortTermForecast, SeasonalInfo, WeatherData } from '@/services/weatherService';
 
 // API 응답 타입 정의
 interface CourseDetail {
@@ -77,6 +78,12 @@ interface SpotDetail {
   timeSlot?: "오전" | "오후" | "저녁";
   category?: "attraction" | "restaurant" | "activity";
   visitDuration?: string;
+}
+
+interface WeatherInfo {
+  isLoading: boolean;
+  seasonalInfo: SeasonalInfo | null;
+  forecast: WeatherData[];
 }
 
 // 시간대에 맞는 색상 반환 함수
@@ -109,6 +116,12 @@ export default function TravelCourseDetail() {
   const [visibleCards, setVisibleCards] = useState<string[]>([]);
   const [visibleInfoSection, setVisibleInfoSection] = useState(true);
   const [visibleTipsSection, setVisibleTipsSection] = useState(false);
+
+  const [weatherInfo, setWeatherInfo] = useState<WeatherInfo>({
+    isLoading: true,
+    seasonalInfo: null,
+    forecast: []
+  });
 
   // 데이터 로드
   useEffect(() => {
@@ -183,6 +196,70 @@ export default function TravelCourseDetail() {
       fetchCourseDetail();
     }
   }, [courseId]);
+
+  // 날씨 데이터 및 추천 시기 로드
+  useEffect(() => {
+    const loadWeatherData = async () => {
+      if (!courseDetail) return;
+      
+      try {
+        // 첫 번째 장소의 주소로 지역 판단
+        const firstSpot = courseDetail.spots[0];
+        if (!firstSpot || !firstSpot.address) {
+          console.error('여행지 주소 정보가 없습니다.');
+          setWeatherInfo(prev => ({ ...prev, isLoading: false }));
+          return;
+        }
+        
+        const addressParts = firstSpot.address.split(' ');
+        // 시/도 + 시/군/구 조합으로 더 정확한 지역명 구성
+        const regionName = addressParts.length >= 2 
+          ? `${addressParts[0]} ${addressParts[1]}` 
+          : addressParts[0];
+        
+        console.log(`날씨 조회를 위한 지역명: "${regionName}"`);
+        
+        // 계절 정보 가져오기
+        const seasonalInfo = getBestTravelSeason(
+          `${firstSpot.address} ${courseDetail.title}`, 
+          courseDetail.overview
+        );
+        
+        console.log(`계절 정보 결과:`, seasonalInfo);
+        
+        // 날씨 예보 가져오기 (실패해도 계속 진행)
+        let forecast: WeatherData[] = [];
+        try {
+          console.log(`${regionName} 지역의 날씨 예보 요청 중...`);
+          forecast = await getShortTermForecast(regionName);
+          
+          if (forecast.length > 0) {
+            console.log(`날씨 예보 데이터 수신 완료: ${forecast.length}개 항목`);
+            console.log(`현재/가장 빠른 예보: ${forecast[0].sky}, ${forecast[0].tmp}°C, 강수확률 ${forecast[0].pop}%`);
+          } else {
+            console.warn('받아온 날씨 예보 데이터가 없습니다.');
+          }
+        } catch (forecastError) {
+          console.error('날씨 예보 가져오기 실패:', forecastError);
+        }
+        
+        // 결과 설정
+        setWeatherInfo({
+          isLoading: false,
+          seasonalInfo,
+          forecast
+        });
+        
+      } catch (error) {
+        console.error('날씨 정보 로드 실패:', error);
+        setWeatherInfo(prev => ({ ...prev, isLoading: false }));
+      }
+    };
+
+    if (courseDetail) {
+      loadWeatherData();
+    }
+  }, [courseDetail]);
 
   // 인터섹션 옵저버 설정
   useEffect(() => {
@@ -402,6 +479,10 @@ export default function TravelCourseDetail() {
   // 여행 코스 평점과 리뷰 수 (API에서 제공되지 않으므로 임시 데이터)
   const rating = 4.7;
   const reviewCount = 120;
+
+  const recommendedTimes = weatherInfo.seasonalInfo 
+    ? `${weatherInfo.seasonalInfo.months}에 방문 추천` 
+    : "오전 10시~오후 2시 방문 추천";
 
   return (
     <>
@@ -1248,11 +1329,17 @@ export default function TravelCourseDetail() {
                         quality={100}
                         style={{ marginRight: '12px' }}
                       />
-                      <Text>{courseDetail.overview.includes('해변') || courseDetail.overview.includes('바다') ? '여름' : '봄/가을'}</Text>
+                      <Text>
+                        {weatherInfo.seasonalInfo ? weatherInfo.seasonalInfo.bestSeason : 
+                         courseDetail.overview.includes('해변') || courseDetail.overview.includes('바다') 
+                         ? '여름' : '봄/가을'}
+                      </Text>
                     </Flex>
                   </Box>
                   <Text className="price-card-description">
-                    {courseDetail.overview.includes('해변') || courseDetail.overview.includes('바다') ? '6-8월 추천' : '3-5월, 9-11월 추천'}
+                    {weatherInfo.seasonalInfo ? weatherInfo.seasonalInfo.months : 
+                     courseDetail.overview.includes('해변') || courseDetail.overview.includes('바다') 
+                     ? '6-8월 추천' : '3-5월, 9-10월 추천'}
                   </Text>
                 </Box>
 
@@ -1273,7 +1360,8 @@ export default function TravelCourseDetail() {
                           최적 날씨
                         </Text>
                         <Text fontSize="sm" color="gray.500">
-                          {courseDetail.overview.includes('눈') ? '겨울 설경' : 
+                          {weatherInfo.seasonalInfo ? weatherInfo.seasonalInfo.conditions :
+                           courseDetail.overview.includes('눈') ? '겨울 설경' : 
                            courseDetail.overview.includes('해변') ? '여름 바다' : '맑은 날씨, 쾌적한 기온'}
                         </Text>
                       </Box>
@@ -1286,23 +1374,38 @@ export default function TravelCourseDetail() {
                           대비 사항
                         </Text>
                         <Text fontSize="sm" color="gray.500">
-                          {courseDetail.overview.includes('등산') ? '등산복, 등산화 준비' : 
+                          {weatherInfo.seasonalInfo ? weatherInfo.seasonalInfo.preparation :
+                           courseDetail.overview.includes('등산') ? '등산복, 등산화 준비' : 
                            courseDetail.overview.includes('해변') ? '자외선 차단제, 물놀이용품' : '방수 의류와 우산 준비'}
                         </Text>
                       </Box>
                     </Box>
 
-                    <Box className="price-card-feature">
-                      <Icon as={FaCalendarAlt} color="#fb8072" boxSize={5} mr={3} />
-                      <Box>
-                        <Text fontWeight="bold" fontSize="sm">
-                          방문 기간
-                        </Text>
-                        <Text fontSize="sm" color="gray.500">
-                          최소 {Math.max(1, Math.ceil(courseDetail.spots.length / 3))}박 {Math.max(2, Math.ceil(courseDetail.spots.length / 3) + 1)}일 권장
-                        </Text>
+                    {weatherInfo.forecast.length > 0 ? (
+                      <Box className="price-card-feature">
+                        <Icon as={FaCalendarAlt} color="#fb8072" boxSize={5} mr={3} />
+                        <Box>
+                          <Text fontWeight="bold" fontSize="sm">
+                            {courseDetail.spots[0]?.address.split(' ')[0]} 현재 날씨
+                          </Text>
+                          <Text fontSize="sm" color="gray.500" noOfLines={1}>
+                            {`${weatherInfo.forecast[0].sky}, ${weatherInfo.forecast[0].tmp}°C (강수확률 ${weatherInfo.forecast[0].pop}%, 습도 ${weatherInfo.forecast[0].reh}%)`}
+                          </Text>
+                        </Box>
                       </Box>
-                    </Box>
+                    ) : (
+                      <Box className="price-card-feature">
+                        <Icon as={FaCalendarAlt} color="#fb8072" boxSize={5} mr={3} />
+                        <Box>
+                          <Text fontWeight="bold" fontSize="sm">
+                            방문 기간
+                          </Text>
+                          <Text fontSize="sm" color="gray.500">
+                            최소 {Math.max(1, Math.ceil(courseDetail.spots.length / 3))}박 {Math.max(2, Math.ceil(courseDetail.spots.length / 3) + 1)}일 권장
+                          </Text>
+                        </Box>
+                      </Box>
+                    )}
                   </VStack>
                 </Box>
               </Box>
@@ -1354,7 +1457,7 @@ export default function TravelCourseDetail() {
                   <VStack spacing={6} align="stretch">
                     <Box>
                       <Text fontWeight="bold" fontSize="sm" mb={1}>방문 일정</Text>
-                      <Text fontSize="xs" color="gray.600" ml={2}>• 오전 10시~오후 2시 방문 추천</Text>
+                      <Text fontSize="xs" color="gray.600" ml={2}>• {recommendedTimes}</Text>
                     </Box>
 
                     <Box>
@@ -1367,9 +1470,11 @@ export default function TravelCourseDetail() {
 
                     <Box>
                       <Text fontWeight="bold" fontSize="sm" mb={1}>여행 준비물</Text>
-                      <Text fontSize="xs" color="gray.600" ml={2}>• {courseDetail.overview.includes('해변') ? 
-                        '등산화, 편한 옷, 무릎, 물, 스틱' : 
-                        '편안한 신발, 모자, 물, 카메라'}</Text>
+                      <Text fontSize="xs" color="gray.600" ml={2}>• {weatherInfo.seasonalInfo 
+                          ? weatherInfo.seasonalInfo.preparation 
+                          : courseDetail.overview.includes('해변') 
+                            ? '등산화, 편한 옷, 무릎, 물, 스틱' 
+                            : '편안한 신발, 모자, 물, 카메라'}</Text>
                     </Box>
 
                     <Box>
