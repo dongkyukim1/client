@@ -10,7 +10,6 @@ import useThemeMode from "@/hooks/useDarkMode";
 import dynamic from "next/dynamic";
 import clsx from "clsx"; //디자인 추가
 
-
 const logo = process.env.NEXT_PUBLIC_SERVICE_NAME;
 
 // 클라이언트 전용 컴포넌트
@@ -118,7 +117,7 @@ const NavSection = () => {
 
   // 테마에 따른 아이콘과 색상 결정
   const getThemeIcon = () => {
-    switch (themeMode) { 
+    switch (themeMode) {
       case "dark":
         return <FaMoon className="text-white text-lg" />;
       case "light":
@@ -260,7 +259,7 @@ const NavSection = () => {
           <Link href="/week" className={getLinkClasses()}>
             주간 여행지
           </Link>
-        
+
           {/* ✅ 축제 드롭다운 메뉴 */}
           <div
             className="relative hidden md:block"
@@ -270,9 +269,7 @@ const NavSection = () => {
             <span
               className={clsx(
                 "text-sm font-medium px-3 py-2 hover:bg-gray-50 transition-colors",
-                themeMode === "dark"
-                  ? "text-white hover:bg-gray-800"
-                  : "text-gray-600 hover:text-gray-900"
+                themeMode === "dark" ? "text-white hover:bg-gray-800" : "text-gray-600 hover:text-gray-900"
               )}
             >
               축제
@@ -311,12 +308,37 @@ const NavSection = () => {
           <Link href="/reviews" className={getLinkClasses()}>
             리뷰보기
           </Link>
-          <Link href="/dashboard" className="hidden md:block">
-            <Button variant="outline" size="sm" className={`font-medium font-semibold ${getDashboardTextClass()}`}>
-              <span>AI 여행 계획</span>
-            </Button>
-          </Link>
-        
+
+          {/* AI 여행 계획 드롭다운 메뉴 */}
+          <div
+            className="relative hidden md:block"
+            onMouseEnter={() => setIsPlanMenuOpen(true)}
+            onMouseLeave={() => setIsPlanMenuOpen(false)}
+          >
+            <Link href="/dashboard" className="block">
+              <Button variant="outline" size="sm" className={`font-medium font-semibold ${getDashboardTextClass()}`}>
+                <span>AI 여행 계획</span>
+              </Button>
+            </Link>
+
+            {isPlanMenuOpen && (
+              <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md z-50">
+                <Link
+                  href="/dashboard"
+                  className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-white"
+                >
+                  AI 여행 계획
+                </Link>
+                <Link
+                  href="/dashboard/favorite-courses"
+                  className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-white"
+                >
+                  내가 찜한 인기여행코스
+                </Link>
+              </div>
+            )}
+          </div>
+
           <Link href="/dashboard" className="md:hidden">
             <Button variant="primary" size="sm" className="text-xs border-0">
               AI 여행
