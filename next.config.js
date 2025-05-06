@@ -5,44 +5,16 @@ const nextConfig = {
   transpilePackages: ['@chakra-ui/react', '@chakra-ui/next-js'],
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'randomuser.me',
-      },
-      {
-        protocol: 'http',
-        hostname: 'tong.visitkorea.or.kr',
-      },
-      {
-        protocol: 'https',
-        hostname: 'tong.visitkorea.or.kr',
-      },
-      {
-        protocol: 'https',
-        hostname: 'api.visitkorea.or.kr',
-      },
-      {
-        protocol: 'https',
-        hostname: 'korean.visitkorea.or.kr',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.visitkorea.or.kr',
-      },
-      {
-        protocol: 'https',
-        hostname: 'cdn.pixabay.com',
-      }
+      { protocol: 'https', hostname: 'randomuser.me' },
+      { protocol: 'http', hostname: 'tong.visitkorea.or.kr' },
+      { protocol: 'https', hostname: 'tong.visitkorea.or.kr' },
+      { protocol: 'https', hostname: 'api.visitkorea.or.kr' },
+      { protocol: 'https', hostname: 'korean.visitkorea.or.kr' },
+      { protocol: 'https', hostname: 'www.visitkorea.or.kr' },
+      { protocol: 'https', hostname: 'cdn.pixabay.com' }
     ],
-    domains: ['cdn.pixabay.com', 'apis.data.go.kr'],
+    domains: ['cdn.pixabay.com', 'apis.data.go.kr', 'tong.visitkorea.or.kr', '43.200.177.95'],
     unoptimized: true
-  },
-  experimental: {
-    // Enable App Router with Server Components
-    appDir: true,
-    // Enable Turbopack
-    turbo: {},
-    serverComponentsExternalPackages: ['tesseract.js'],
   },
   webpack: (config) => {
     config.resolve.alias = {
@@ -57,6 +29,14 @@ const nextConfig = {
     };
     return config;
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://3.39.0.103/api/:path*', // 실제 API 서버
+      },
+    ];
+  },
 }
 
-module.exports = nextConfig; 
+module.exports = nextConfig;

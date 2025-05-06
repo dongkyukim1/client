@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
 import Button from "@/components/common/Button";
-import useThemeMode, { ThemeMode } from "@/hooks/useDarkMode";
+import useThemeMode from "@/hooks/useDarkMode";
 import dynamic from "next/dynamic";
 import clsx from "clsx"; //디자인 추가
 
@@ -19,6 +19,7 @@ const NavSection = () => {
   const [scrolled, setScrolled] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [isFestivalMenuOpen, setIsFestivalMenuOpen] = useState(false);
+  const [isPlanMenuOpen, setIsPlanMenuOpen] = useState(false);
   const { data: session } = useSession();
   const { themeMode, cycleTheme, isLoading } = useThemeMode();
 
@@ -256,6 +257,10 @@ const NavSection = () => {
         </div>
 
         <div className="flex items-center gap-1 md:gap-3">
+          <Link href="/week" className={getLinkClasses()}>
+            주간 여행지
+          </Link>
+        
           {/* ✅ 축제 드롭다운 메뉴 */}
           <div
             className="relative hidden md:block"
@@ -296,8 +301,9 @@ const NavSection = () => {
               </div>
             )}
           </div>
-          <Link href="/recommendation" className={getLinkClasses()}>
-            여행 코스
+
+          <Link href="/popular-courses" className={getLinkClasses()}>
+            추천 인기 여행코스
           </Link>
           <Link href="/destinations" className={getLinkClasses()}>
             인기 여행지
@@ -305,18 +311,17 @@ const NavSection = () => {
           <Link href="/reviews" className={getLinkClasses()}>
             리뷰보기
           </Link>
-
           <Link href="/dashboard" className="hidden md:block">
             <Button variant="outline" size="sm" className={`font-medium font-semibold ${getDashboardTextClass()}`}>
               <span>AI 여행 계획</span>
             </Button>
           </Link>
+        
           <Link href="/dashboard" className="md:hidden">
             <Button variant="primary" size="sm" className="text-xs border-0">
               AI 여행
             </Button>
           </Link>
-
           <Button
             variant="outline"
             size="sm"

@@ -52,14 +52,14 @@ export default function KakaoMap({ festivals }: Props) {
         });
 
         // 인포윈도우를 표시하는 클로저를 만드는 함수입니다
-        function makeOverListener(map, marker, infowindow) {
+        function makeOverListener(map: any, marker: any, infowindow: any) {
           return function () {
             infowindow.open(map, marker);
           };
         }
 
         // 인포윈도우를 닫는 클로저를 만드는 함수입니다
-        function makeOutListener(infowindow) {
+        function makeOutListener(infowindow: any) {
           return function () {
             infowindow.close();
           };

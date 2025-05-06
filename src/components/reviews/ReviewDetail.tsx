@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { Review } from '@/types/review';
-import { FaStar, FaCalendarAlt, FaMapMarkerAlt, FaTag } from 'react-icons/fa';
-import { formatDate } from '@/utils/dateUtils';
-import { getImagesByKeyword } from '@/services/tourImageService';
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { Review } from "@/types/review";
+import { FaStar, FaCalendarAlt, FaMapMarkerAlt, FaTag } from "react-icons/fa";
+import { formatDate } from "@/utils/dateUtils";
+import { getImagesByKeyword } from "@/services/tourImageService";
 
 interface ReviewDetailProps {
   review: Review;
 }
 
 export default function ReviewDetail({ review }: ReviewDetailProps) {
-  const [selectedImage, setSelectedImage] = useState<string>('');
+  const [selectedImage, setSelectedImage] = useState<string>("");
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
   const [apiImages, setApiImages] = useState<string[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(true);
@@ -93,7 +93,7 @@ export default function ReviewDetail({ review }: ReviewDetailProps) {
           />
         )}
       </div>
-
+      
       {/* 썸네일 리스트 */}
       {uniqueImages.length > 1 && (
         <div className="flex p-2 space-x-2 overflow-x-auto">
@@ -119,7 +119,6 @@ export default function ReviewDetail({ review }: ReviewDetailProps) {
       {/* 상세 내용 */}
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-2">{review.title}</h1>
-        <div className="flex items-center text-gray-600 mb-4">
           <div className="flex items-center mr-4">
             <FaStar className="text-yellow-500 mr-1" />
             <span>{review.rating.toFixed(1)}</span>
@@ -140,7 +139,6 @@ export default function ReviewDetail({ review }: ReviewDetailProps) {
             <Image
               src={review.author?.avatar || '/images/default-profile.png'}
               alt={review.author?.name || '작성자'}
-              fill
               className="object-cover"
               unoptimized
               onError={(e) => {

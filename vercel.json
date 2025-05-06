@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "github": {
+    "enabled": true,
+    "silent": false
+  },
+  "buildCommand": "DISABLE_ESLINT_PLUGIN=true next build"
+} 

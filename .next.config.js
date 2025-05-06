@@ -37,13 +37,7 @@ const nextConfig = {
     domains: ['cdn.pixabay.com', 'apis.data.go.kr'],
     unoptimized: true
   },
-  experimental: {
-    // Enable App Router with Server Components
-    appDir: true,
-    // Enable Turbopack
-    turbo: {},
-    serverComponentsExternalPackages: ['tesseract.js'],
-  },
+  serverComponentsExternalPackages: ['tesseract.js'],
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,

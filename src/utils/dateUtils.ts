@@ -68,3 +68,9 @@ export function getDaysForMonth(year: number, month: number): (number | null)[] 
 
   return days;
 }
+
+export function formatDateDot(dateStr?: string) {
+  if (!dateStr) return "";
+  if (dateStr.length !== 8) return dateStr;
+  return `${dateStr.substring(0, 4)}.${dateStr.substring(4, 6)}.${dateStr.substring(6, 8)}`;
+}

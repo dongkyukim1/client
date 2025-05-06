@@ -2,7 +2,9 @@ import FestivalDetail from "@/app/festival/_components/FestivalDetail";
 import getDetailCommon from "@/app/festival/_services/getDetailCommon";
 import { DetailCommonResponse } from "@/types/festival";
 
-export async function generateMetadata({ params }: Props) {
+type Params = Promise<{ id: string }>;
+
+export async function generateMetadata({ params }: { params: Params }) {
   const { id } = await params;
   const detailCommonResponse: DetailCommonResponse = await getDetailCommon(id);
   const { title, overview, firstimage2 } = detailCommonResponse.response.body.items.item[0];
@@ -25,11 +27,7 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-interface Props {
-  params: { id: string };
-}
-
-export default async function Detail({ params }: Props) {
+export default async function Detail({ params }: { params: Params }) {
   const { id } = await params;
   return <FestivalDetail id={id} />;
 }

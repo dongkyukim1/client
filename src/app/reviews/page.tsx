@@ -13,7 +13,6 @@ export default function ReviewsPage() {
     const parsed = stored ? JSON.parse(stored) : [];
     setReviews(parsed);
   }, []);
-
   return (
     <div className="bg-gray-50 min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,7 +33,6 @@ export default function ReviewsPage() {
 
           <CreateReviewButton />
         </div>
-
         <ReviewsWrapper reviews={reviews} totalCount={reviews.length} page={1} pageSize={9} />
       </div>
     </div>
