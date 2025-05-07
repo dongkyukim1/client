@@ -32,7 +32,7 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: ":path*",
+        source: "/:path*",
         destination: "http://3.34.181.101/:path*",
       },
     ];
