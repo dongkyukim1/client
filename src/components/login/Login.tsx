@@ -218,7 +218,7 @@ export default function Login() {
 
   /** 소셜 로그인 */
   const handleSocialLogin = (provider: string) => {
-    router.push(`http://localhost:8080/api/auth/oauth2/${provider}`);
+    router.push(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/oauth2/${provider}`);
   };
 
   /** 회원가입 */
