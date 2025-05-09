@@ -1,6 +1,4 @@
 import axios from 'axios';
-// import { Resume, CreateResumeRequest, UpdateResumeRequest } from '@/types';
-import { getSession } from 'next-auth/react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const FASTAPI_URL = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8000';
@@ -21,13 +19,8 @@ console.log('FastAPI URL:', FASTAPI_URL);
 
 // Request interceptor for adding auth token
 api.interceptors.request.use(async (config) => {
-  // NextAuth 세션에서 토큰 가져오기
-  const session = await getSession();
-  const token = session?.user?.accessToken as string;
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  const accessToken = localStorage.getItem('accessToken')
+  if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
   return config;
 });
 
@@ -99,11 +92,11 @@ export const recommendationApi = {
 
 export const authApi = {
   /** 일반 로그인 */
-  login: async (credentials: Record<string, string> | undefined) => {
+  login: async (email: string, password: string) => {
     try {
       const res = await axios.post(`${API_URL}/auth/login`, {
-        email: credentials?.email,
-        password: credentials?.password,
+        email,
+        password,
       })
       return res.data
     } catch (error) {

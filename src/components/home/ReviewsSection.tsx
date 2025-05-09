@@ -24,10 +24,10 @@ export default function ReviewsSection() {
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log("리뷰 데이터 가져오기 시작");
       const data = await getReviews({ page: 1, pageSize: 3 });
-      
+
       if (!data || data.reviews.length === 0) {
         console.warn("가져온 리뷰 데이터가 없습니다");
         setReviewsData({
@@ -78,12 +78,7 @@ export default function ReviewsSection() {
             <Text color="red.500" fontSize="lg" mb={4}>
               {error}
             </Text>
-            <Button
-              onClick={fetchReviews}
-              variant="outline"
-              size="md"
-              className="hover:bg-pink-100"
-            >
+            <Button onClick={fetchReviews} variant="outline" size="md" className="hover:bg-pink-100">
               다시 시도
             </Button>
           </div>
@@ -96,9 +91,7 @@ export default function ReviewsSection() {
                   <Box className="absolute top-2 right-2 z-10">
                     <ShareButtons
                       title={review.title}
-                      description={`${
-                        review.location
-                      } - ${review.content.substring(0, 50)}...`}
+                      description={`${review.location} - ${review.content.substring(0, 50)}...`}
                       url={`/reviews/${review.id}`}
                       location={review.location}
                     />
@@ -116,12 +109,8 @@ export default function ReviewsSection() {
         )}
 
         <Box textAlign="center" mt={8}>
-          <Link href="/reviews" passHref legacyBehavior>
-            <Button 
-              variant="primary" 
-              size="lg"
-              className="ml-2 hover:bg-pink-600"
-            >
+          <Link href="/reviews" passHref>
+            <Button variant="primary" size="lg" className="ml-2 hover:bg-pink-600">
               더 많은 리뷰 보기
             </Button>
           </Link>
