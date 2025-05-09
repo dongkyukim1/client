@@ -70,51 +70,31 @@ export default function ReviewDetail({ review }: ReviewDetailProps) {
 
   return (
     <article className="bg-white rounded-lg shadow-lg overflow-hidden">
-      {/* 이미지 영역 */}
       <div className="relative h-96 w-full bg-gray-100">
-        {isLoadingImages && !selectedImage ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="animate-spin h-12 w-12 border-t-2 border-b-2 border-pink-500 rounded-full" />
-          </div>
-        ) : (
-          <Image
-            src={selectedImage || fallbackImage}
-            alt={review.title}
-            fill
-            className="object-cover"
-            onError={() => {
-              if (!isLocalImage(selectedImage)) {
-                handleImageError(selectedImage);
-              }
-            }}
-            unoptimized
-          />
-        )}
+        <Image
+          src={selectedImage}
+          alt={review.title}
+          fill
+          className="object-cover"
+          onError={() => setSelectedImage(fallbackImage)}
+          unoptimized
+        />
       </div>
 
-      {/* 썸네일 리스트 */}
-      {uniqueImages.length > 1 && (
+      {review.images?.length > 1 && (
         <div className="flex p-2 space-x-2 overflow-x-auto">
-          {uniqueImages.map((img, idx) => (
+          {review.images.map((img, idx) => (
             <div
               key={idx}
               className={`relative w-20 h-20 cursor-pointer ${selectedImage === img ? "ring-2 ring-pink-500" : ""}`}
               onClick={() => setSelectedImage(img)}
             >
-              <Image
-                src={img}
-                alt={`썸네일 ${idx + 1}`}
-                fill
-                className="object-cover rounded"
-                onError={() => !isLocalImage(img) && handleImageError(img)}
-                unoptimized
-              />
+              <Image src={img.imageUrl} alt={`썸네일 ${idx + 1}`} fill className="object-cover rounded" unoptimized />
             </div>
           ))}
         </div>
       )}
 
-      {/* 상세 내용 */}
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-2">{review.title}</h1>
         <div className="flex items-center text-gray-600 mb-4">

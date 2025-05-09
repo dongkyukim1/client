@@ -12,7 +12,7 @@ interface ReviewPageProps {
 
 // 동적 메타데이터 생성
 export async function generateMetadata({ params }: ReviewPageProps): Promise<Metadata> {
-  const { id } = await params;
+  const id = Number(params.id);
 
   try {
     const review = await getReviewById(id);
@@ -31,10 +31,10 @@ export async function generateMetadata({ params }: ReviewPageProps): Promise<Met
         title: `${review.title} - 여행 리뷰`,
         description: review.content.substring(0, 150) + (review.content.length > 150 ? "..." : ""),
         images:
-          review.images && review.images.length > 0
+          review.images.length > 0
             ? [
                 {
-                  url: review.images[0],
+                  url: review.images[0].imageUrl,
                   width: 1200,
                   height: 630,
                   alt: review.title,
@@ -59,8 +59,7 @@ export async function generateMetadata({ params }: ReviewPageProps): Promise<Met
 }
 
 export default async function ReviewPage({ params }: ReviewPageProps) {
-  const resolvedParams = await Promise.resolve(params);
-  const id = resolvedParams.id;
+  const id = Number(params.id);
 
   try {
     const review = await getReviewById(id);
@@ -69,7 +68,6 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
       notFound();
     }
 
-    // 현재 URL 생성
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const currentUrl = `${baseUrl}/reviews/${id}`;
 
@@ -84,16 +82,14 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
             <div className="flex space-x-2">
               <ShareButtons
                 title={review.title}
-                description={`${review.location} - ${review.content.substring(0, 100)}...`}
+                description={`${review.content.substring(0, 100)}...`}
                 url={currentUrl}
-                location={review.location}
+                location={review.address}
               />
             </div>
           </div>
 
           <ReviewDetail review={review} />
-
-          {/* 여기에 댓글 섹션이나 추천 리뷰 등을 추가할 수 있습니다 */}
         </div>
       </div>
     );

@@ -1,18 +1,21 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
+// src/app/reviews/page.tsx
+import { getReviews } from "@/services/reviewService";
 import { ReviewsWrapper } from "@/components/reviews/ReviewsClientWrapper";
 import CreateReviewButton from "@/components/reviews/CreateReviewButton";
+import Link from "next/link";
 
-export default function ReviewsPage() {
-  const [reviews, setReviews] = useState<any[]>([]);
+interface ReviewsPageProps {
+  searchParams?: {
+    page?: string;
+  };
+}
 
-  useEffect(() => {
-    const stored = localStorage.getItem("localReviews");
-    const parsed = stored ? JSON.parse(stored) : [];
-    setReviews(parsed);
-  }, []);
+export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
+  const page = Number(searchParams?.page || 0);
+  const size = 10;
+
+  const { content: reviews, totalElements, size: pageSize } = await getReviews(page, size);
+
   return (
     <div className="bg-gray-50 min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,12 +31,13 @@ export default function ReviewsPage() {
             href="/"
             className="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg shadow-sm hover:bg-gray-600 transition-colors"
           >
-            <span>홈으로</span>
+            홈으로
           </Link>
 
           <CreateReviewButton />
         </div>
-        <ReviewsWrapper reviews={reviews} totalCount={reviews.length} page={1} pageSize={9} />
+
+        <ReviewsWrapper reviews={reviews} totalCount={totalElements} page={page} pageSize={pageSize} />
       </div>
     </div>
   );

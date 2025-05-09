@@ -3,41 +3,57 @@
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import CreateReviewModal from "@/components/reviews/CreateReviewModal";
+import { createReview } from "@/services/reviewService";
 
 export default function CreateReviewButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleSubmit = async (reviewData: any, proofImage?: File | null, reviewImages?: File[]) => {
+  const handleSubmit = async (
+    reviewData: {
+      title: string;
+      content: string;
+      location: string;
+      rating: number;
+      createdAt: string;
+      startDate?: string;
+      endDate?: string;
+      storeName?: string;
+      detailedLocation?: string;
+      parentLocation?: string;
+    },
+    proofImage?: File | null,
+    reviewImages?: File[]
+  ) => {
     try {
-      const images: string[] = [];
-
-      if (reviewImages && reviewImages.length > 0) {
-        for (const file of reviewImages) {
-          const base64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-          images.push(base64);
-        }
+      if (!proofImage) {
+        alert("영수증 이미지를 첨부해주세요.");
+        return;
       }
 
-      const newReview = {
-        ...reviewData,
-        id: Date.now().toString(),
-        images,
-        author: {
-          name: "사용자",
-          avatar: "/images/default-profile.png"
-        },
-        tags: []
+      const reviewPayload = {
+        address: reviewData.location,
+        title: reviewData.title,
+        content: reviewData.content,
+        rating: reviewData.rating
       };
 
-      const stored = localStorage.getItem("localReviews");
-      const parsed = stored ? JSON.parse(stored) : [];
-      parsed.unshift(newReview);
-      localStorage.setItem("localReviews", JSON.stringify(parsed));
+      const formData = new FormData();
+
+      // JSON 형태의 리뷰 정보를 Blob으로 감싸기
+      const reviewBlob = new Blob([JSON.stringify(reviewPayload)], {
+        type: "application/json"
+      });
+      formData.append("review", reviewBlob);
+
+      // 리뷰 이미지 리스트 추가
+      if (reviewImages && reviewImages.length > 0) {
+        reviewImages.forEach((file) => {
+          formData.append("images", file);
+        });
+      }
+
+      // API 호출
+      await createReview(formData);
 
       alert("리뷰가 성공적으로 등록되었습니다!");
       window.location.reload();
