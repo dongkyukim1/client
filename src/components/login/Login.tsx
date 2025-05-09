@@ -8,7 +8,6 @@ import { SiNaver } from "react-icons/si";
 import { RiKakaoTalkFill } from "react-icons/ri";
 import TermsModal from "@/components/modal/TermsModal";
 import PrivacyModal from "@/components/modal/PrivacyModal";
-import { signIn } from "next-auth/react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { authApi } from "@/services/api";
@@ -213,7 +212,18 @@ export default function Login() {
       return;
     }
 
-    signIn("email", { email: loginEmail, password: loginPassword });
+    const res = await authApi.login(loginEmail, loginPassword);
+    if (res.code !== "SU") return;
+    sessionStorage.setItem("accessToken", res.accessToken);
+    /**
+     * router.replace("/"); 로는 페이지를 이동해도 모달이 언마운트 되지 않는 이슈 있음
+     * https://github.com/vercel/next.js/discussions/50284
+     * router.back(); 으로 닫히긴 하지만, 처음부터 해당 url으로 접근했을 경우 웹사이트를 벗어나 버림
+     * 고로 모든 컨텍스트가 재설정되긴 하지만 아래 코드를 사용함.
+     */
+    window.location.replace("/");
+    // const accessToken = jwtDecode(res.accessToken);
+    // const sub = JSON.parse(accessToken.sub as string);
   };
 
   /** 소셜 로그인 */

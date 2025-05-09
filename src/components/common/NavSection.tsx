@@ -4,11 +4,11 @@ import { FaUserCircle, FaMapMarkedAlt, FaSearch, FaSun, FaMoon, FaPalette } from
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { signOut, useSession } from "next-auth/react";
 import Button from "@/components/common/Button";
 import useThemeMode from "@/hooks/useDarkMode";
 import dynamic from "next/dynamic";
 import clsx from "clsx"; //디자인 추가
+import { jwtDecode } from "jwt-decode";
 
 const logo = process.env.NEXT_PUBLIC_SERVICE_NAME;
 
@@ -19,7 +19,7 @@ const NavSection = () => {
   const [openModal, setOpenModal] = useState(false);
   const [isFestivalMenuOpen, setIsFestivalMenuOpen] = useState(false);
   const [isPlanMenuOpen, setIsPlanMenuOpen] = useState(false);
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
   const { themeMode, cycleTheme, isLoading } = useThemeMode();
 
   // 스크롤 이벤트 리스너
@@ -128,7 +128,7 @@ const NavSection = () => {
   };
 
   const handleLoginClick = () => {
-    if (session?.user) {
+    if (sessionStorage.getItem("accessToken")) {
       setOpenModal(!openModal);
     } else router.push("/login", { scroll: false });
   };
@@ -138,7 +138,8 @@ const NavSection = () => {
   };
 
   const handleLogoutClick = () => {
-    signOut();
+    sessionStorage.removeItem("accessToken");
+    window.location.reload();
   };
 
   // 현재 테마에 따라 헤더 스타일 변경
@@ -315,7 +316,7 @@ const NavSection = () => {
             onMouseEnter={() => setIsPlanMenuOpen(true)}
             onMouseLeave={() => setIsPlanMenuOpen(false)}
           >
-            <Link href="/dashboard" className="block">
+            <Link href="/travel/create" className="block">
               <Button variant="outline" size="sm" className={`font-medium font-semibold ${getDashboardTextClass()}`}>
                 <span>AI 여행 계획</span>
               </Button>
@@ -324,13 +325,13 @@ const NavSection = () => {
             {isPlanMenuOpen && (
               <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md z-50">
                 <Link
-                  href="/dashboard"
+                  href="/travel/create"
                   className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-white"
                 >
                   AI 여행 계획
                 </Link>
                 <Link
-                  href="/dashboard/favorite-courses"
+                  href="/travel/favorite-courses"
                   className="block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-white"
                 >
                   내가 찜한 인기여행코스
@@ -338,27 +339,17 @@ const NavSection = () => {
               </div>
             )}
           </div>
-
-          <Link href="/dashboard" className="md:hidden">
-            <Button variant="primary" size="sm" className="text-xs border-0">
-              AI 여행
-            </Button>
-          </Link>
           <Button
             variant="outline"
             size="sm"
             className="ml-1 flex items-center gap-2"
             onClick={handleLoginClick}
-            aria-label={session?.user?.name ?? "로그인"}
+            aria-label={sessionStorage.getItem("accessToken") ?? "로그인"}
           >
             <FaUserCircle className={getUserIconClasses()} />
             <span className={`hidden md:block text-sm font-semibold ${getDashboardTextClass()}`}>
-              {session?.user
-                ? session.user.name
-                  ? session.user.name
-                  : session.user.email?.includes("google_")
-                  ? "사용자"
-                  : session.user.email
+              {!!sessionStorage.getItem("accessToken")
+                ? JSON.parse(jwtDecode(sessionStorage.getItem("accessToken")!).sub!).nickname
                 : "로그인"}
             </span>
           </Button>
