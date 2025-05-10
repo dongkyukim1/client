@@ -19,7 +19,7 @@ console.log('FastAPI URL:', FASTAPI_URL);
 
 // Request interceptor for adding auth token
 api.interceptors.request.use(async (config) => {
-  const accessToken = localStorage.getItem('accessToken')
+  const accessToken = sessionStorage.getItem('accessToken')
   if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
   return config;
 });
@@ -162,10 +162,9 @@ export const authApi = {
 
 export const infoApi = {
   /** 회원 정보 가져오기 */
-  getInfo: (email: string) => {
-    return api.post('/member', {
-      email
-    })
+  getInfo: async () => {
+    const res = await api.get('/member');
+    return res.data
   },
 
   /** 회원 정보 수정하기 */
