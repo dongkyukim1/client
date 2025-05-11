@@ -1,3 +1,5 @@
+"use client";
+
 // src/app/reviews/page.tsx
 import { getReviews } from "@/services/reviewService";
 import { ReviewsWrapper } from "@/components/reviews/ReviewsClientWrapper";

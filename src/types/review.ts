@@ -15,8 +15,8 @@ export interface Review {
 }
 
 export interface ReviewListResponse {
-  content: Review[];
-  totalElements: number;
+  reviews: Review[];
+  totalCount: number;
   size: number;
   number: number;
 }
