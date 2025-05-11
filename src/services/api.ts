@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const FASTAPI_URL = process.env.NEXT_PUBLIC_FASTAPI_URL || 'http://localhost:8000';
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_URL,
 });
 
@@ -97,10 +97,20 @@ export const authApi = {
       const res = await axios.post(`${API_URL}/auth/login`, {
         email,
         password,
-      })
+      }, { withCredentials: true, }
+      )
       return res.data
     } catch (error) {
       console.log("일반 로그인 API 호출 중 에러: ", error)
+    }
+  },
+
+  logout: async () => {
+    try {
+      const res = await axios.post(`/api/auth/logout`)
+      return res.data
+    } catch (error) {
+      console.log("로그아웃 API 호출 중 에러: ", error)
     }
   },
 

@@ -26,7 +26,7 @@ export default function ReviewsSection() {
       setError(null);
 
       console.log("리뷰 데이터 가져오기 시작");
-      const data = await getReviews({ page: 1, pageSize: 3 });
+      const data = await getReviews(1, 3);
 
       if (!data || data.reviews.length === 0) {
         console.warn("가져온 리뷰 데이터가 없습니다");
