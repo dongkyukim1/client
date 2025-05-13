@@ -341,7 +341,7 @@ export default function Login() {
     setSignupErrorMessage("");
     if (!validateEmailInput()) return;
     const res = await authApi.emailCheck(signupEmail);
-    if (res.code === "SU") {
+    if (res?.code === "SU") {
       setCheckedEmail(signupEmail);
       certificationNumberRef.current?.focus();
       authApi.certification(signupEmail, clientId);
