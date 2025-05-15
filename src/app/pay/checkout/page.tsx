@@ -2,12 +2,25 @@
 
 import usePaymentStore from "@/stores/payment";
 import { loadTossPayments, type TossPaymentsWidgets } from "@tosspayments/tosspayments-sdk";
+import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const clientKey = process.env.NEXT_PUBLIC_CLIENT_KEY;
 
 export default function CheckoutPage() {
   const { amount: a, orderName, customerKey } = usePaymentStore();
+  const [user, setUser] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const accessToken = sessionStorage.getItem("accessToken");
+    if (!accessToken) {
+      router.back();
+      return;
+    }
+    setUser(JSON.parse(jwtDecode(accessToken!).sub as string));
+  }, []);
 
   const [amount, setAmount] = useState({
     currency: "KRW",
@@ -91,8 +104,8 @@ export default function CheckoutPage() {
                 orderName,
                 successUrl: window.location.origin + "/pay/success",
                 failUrl: window.location.origin + "/pay/fail",
-                customerEmail: "email@email.com",
-                customerName: "name",
+                customerEmail: user?.email,
+                customerName: user?.nickname,
                 customerMobilePhone: "01012341234",
               });
             } catch (error) {

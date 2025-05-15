@@ -185,28 +185,46 @@ export const infoApi = {
 
 export const paymentApi = {
   /** 결제 임시 저장 */
-  payTempStore: (orderId: string, amount: string) => {
-    return api.post('/api/temp', {
-      orderId,
-      amount
-    })
+  payTempStore: async (orderId: string, amount: string) => {
+    try {
+      const res = await api.post('/api/temp', {
+        orderId,
+        amount
+      })
+      return res.data
+    } catch (error) {
+      console.error("결제 임시 저장 API 호출 중 에러: ", error);
+    }
   },
 
   /** 결제 임시 저장 확인 */
-  payTempCheck: (orderId: string, amount: string) => {
-    return api.post('/api/temp', {
-      // todo api 수정 필요 
-      orderId,
-      amount
-    })
+  payTempCheck: async (orderId: string, amount: string) => {
+    try {
+      const res = await api.post('/api/temp/check', {
+        orderId,
+        amount
+      })
+      return res.data
+    } catch (error) {
+      console.error("결제 임시 저장 확인 API 호출 중 에러: ", error);
+    }
   },
 
   /** 결제 확인 */
-  payConfirm: (paymentKey: string, orderId: string, amount: string) => {
-    return api.post('/api/confirm', {
-      paymentKey,
-      orderId,
-      amount
-    })
+  payConfirm: async (paymentKey: string, orderId: string, amount: string, uuid: string) => {
+    try {
+      const res = await api.post('/api/confirm', {
+        paymentKey,
+        orderId,
+        amount
+      }, {
+        headers: {
+          "Idempotency-Key": uuid,
+        }
+      })
+      return res.data
+    } catch (error) {
+      console.error("결제 확인 API 호출 중 에러: ", error);
+    }
   },
 }

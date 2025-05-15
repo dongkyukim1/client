@@ -258,6 +258,10 @@ const NavSection = () => {
         </div>
 
         <div className="flex items-center gap-1 md:gap-3">
+          <Link href="/pricing" className={getLinkClasses()}>
+            결제
+          </Link>
+
           <Link href="/week" className={getLinkClasses()}>
             주간 여행지
           </Link>
