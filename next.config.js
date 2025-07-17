@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const path = require("path");
-
+ 
 const nextConfig = {
   transpilePackages: ["@chakra-ui/react", "@chakra-ui/next-js"],
   images: {
@@ -30,5 +30,6 @@ const nextConfig = {
     return config;
   },
 };
-
+ 
 module.exports = nextConfig;
+ 
