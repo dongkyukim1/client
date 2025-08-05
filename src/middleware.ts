@@ -14,11 +14,6 @@ export async function middleware(req: NextRequest) {
   if (!token && protectedRoutes.some(route => pathname.startsWith(route)) && !isPublicTravelPage)
     return NextResponse.redirect(new URL("/login", req.url));
 
-
-  // 로그인 되어 있을 때, 로그인 페이지로 접근 할 경우 홈페이지로 리다이렉트
-  if (token && pathname.startsWith("/login"))
-    return NextResponse.redirect(new URL("/", req.url));
-
   return NextResponse.next();
 }
 

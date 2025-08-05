@@ -28,6 +28,9 @@ export default function Login() {
 
   const [clientId, setClientId] = useState("");
   useEffect(() => {
+    const token = sessionStorage.getItem("accessToken");
+    if (token) router.push("/");
+
     const id = localStorage.getItem("clientId");
     if (id) {
       setClientId(id);
