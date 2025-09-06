@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useCallback, useRef } from "react";
+import React, { useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Layout from "@/components/Layout";
 import Button from "@/components/common/Button";
@@ -63,8 +63,6 @@ export default function GatheringCreatePage() {
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
 
-  const quillRef = useRef<any>(null);
-
   const canSubmit = title.trim() && content.trim();
 
   // Rich text editor modules configuration
@@ -88,27 +86,6 @@ export default function GatheringCreatePage() {
       matchVisual: false,
     },
   };
-
-  const formats = [
-    "header",
-    "font",
-    "size",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "color",
-    "background",
-    "list",
-    "indent",
-    "align",
-    "direction",
-    "link",
-    "image",
-    "video",
-    "blockquote",
-    "code-block",
-  ];
 
   // Image upload handler
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -202,13 +179,6 @@ export default function GatheringCreatePage() {
                   <span className="text-sm font-medium">
                     {previewMode ? "편집" : "미리보기"}
                   </span>
-                </button>
-                <button
-                  onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="text-sm font-medium">고급 옵션</span>
                 </button>
               </div>
             </div>
@@ -349,12 +319,10 @@ export default function GatheringCreatePage() {
                 {!previewMode ? (
                   <div className="relative">
                     <ReactQuill
-                      ref={quillRef}
                       theme="snow"
                       value={content}
                       onChange={setContent}
                       modules={modules}
-                      formats={formats}
                       placeholder="일정, 예산, 선호 스타일 등을 자세히 적어주세요. 사진도 추가할 수 있어요!"
                       className="custom-quill"
                       style={{ minHeight: "300px" }}
