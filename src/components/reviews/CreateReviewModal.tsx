@@ -12,23 +12,13 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import useThemeMode from "@/hooks/useDarkMode";
+import { CreateReviewFormData } from "@/types/review";
 
 interface CreateReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (
-    reviewData: {
-      title: string;
-      content: string;
-      location: string;
-      rating: number;
-      createdAt: string;
-      startDate?: string;
-      endDate?: string;
-      storeName?: string;
-      detailedLocation?: string;
-      parentLocation?: string;
-    },
+    reviewData: CreateReviewFormData,
     proofImage?: File | null,
     reviewImages?: File[]
   ) => void;
@@ -822,6 +812,32 @@ export default function CreateReviewModal({
   ) => {
     const file = e.target.files?.[0] || null;
     if (file) {
+      // 파일 검증
+      if (file.size > 5 * 1024 * 1024) {
+        alert(
+          `파일 크기가 너무 큽니다. (${Math.round(
+            file.size / 1024 / 1024
+          )}MB > 5MB)\n5MB 이하의 이미지를 선택해주세요.`
+        );
+        return;
+      }
+
+      if (!file.type.startsWith("image/")) {
+        alert("이미지 파일만 업로드할 수 있습니다.");
+        return;
+      }
+
+      const supportedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp",
+      ];
+      if (!supportedTypes.includes(file.type)) {
+        alert("지원하지 않는 이미지 형식입니다.\n지원 형식: JPG, PNG, WEBP");
+        return;
+      }
+
       setProofImage(file);
 
       // 스캔 애니메이션 시작
@@ -858,12 +874,65 @@ export default function CreateReviewModal({
     if (files && files.length > 0) {
       const newFiles = Array.from(files);
 
+      // 파일 검증
+      const validFiles: File[] = [];
+      const invalidFiles: string[] = [];
+
+      newFiles.forEach((file) => {
+        // 파일 크기 검증 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+          invalidFiles.push(
+            `${file.name} (크기: ${Math.round(
+              file.size / 1024 / 1024
+            )}MB > 5MB)`
+          );
+          return;
+        }
+
+        // 파일 형식 검증
+        if (!file.type.startsWith("image/")) {
+          invalidFiles.push(`${file.name} (이미지 파일이 아님)`);
+          return;
+        }
+
+        // 지원하는 형식 검증
+        const supportedTypes = [
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+          "image/webp",
+        ];
+        if (!supportedTypes.includes(file.type)) {
+          invalidFiles.push(`${file.name} (지원하지 않는 형식)`);
+          return;
+        }
+
+        validFiles.push(file);
+      });
+
+      // 검증 실패한 파일들 알림
+      if (invalidFiles.length > 0) {
+        alert(
+          `다음 파일들은 업로드할 수 없습니다:\n${invalidFiles.join(
+            "\n"
+          )}\n\n지원 형식: JPG, PNG, WEBP (최대 5MB)`
+        );
+      }
+
+      if (validFiles.length === 0) {
+        return; // 유효한 파일이 없으면 중단
+      }
+
       // 최대 5개까지만 허용
-      const totalFiles = [...reviewImages, ...newFiles];
+      const totalFiles = [...reviewImages, ...validFiles];
       const filesToAdd = totalFiles.slice(0, 5);
 
       if (totalFiles.length > 5) {
-        alert("최대 5개의 이미지만 업로드할 수 있습니다.");
+        alert(
+          `최대 5개의 이미지만 업로드할 수 있습니다. ${
+            validFiles.length
+          }개 중 ${5 - reviewImages.length}개만 추가됩니다.`
+        );
       }
 
       setReviewImages(filesToAdd);
@@ -872,17 +941,25 @@ export default function CreateReviewModal({
       Promise.all(
         filesToAdd.map(
           (file) =>
-            new Promise<string>((resolve) => {
+            new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
               reader.onloadend = () => {
                 resolve(reader.result as string);
               };
+              reader.onerror = () => {
+                reject(new Error(`이미지 미리보기 생성 실패: ${file.name}`));
+              };
               reader.readAsDataURL(file);
             })
         )
-      ).then((previews) => {
-        setReviewImagePreviews(previews);
-      });
+      )
+        .then((previews) => {
+          setReviewImagePreviews(previews);
+        })
+        .catch((error) => {
+          console.error("이미지 미리보기 생성 오류:", error);
+          alert("일부 이미지의 미리보기 생성에 실패했습니다.");
+        });
     }
   };
 
@@ -899,12 +976,38 @@ export default function CreateReviewModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 필수 필드 검증
+    if (!title.trim()) {
+      alert("리뷰 제목을 입력해주세요.");
+      return;
+    }
+
+    if (!content.trim()) {
+      alert("리뷰 내용을 입력해주세요.");
+      return;
+    }
+
+    if (!location.trim()) {
+      alert("여행지를 입력해주세요.");
+      return;
+    }
+
     // 필수 이미지 체크
     if (!proofImage) {
       alert(
         "여행 증명 이미지가 필요합니다. 영수증, 항공권, 버스티켓 등을 업로드해주세요."
       );
       return;
+    }
+
+    // 리뷰 이미지 개수 확인 (선택사항이지만 알림)
+    if (reviewImages.length === 0) {
+      const confirmSubmit = confirm(
+        "리뷰 이미지가 없습니다. 여행 사진을 추가하면 더 매력적인 리뷰가 됩니다.\n\n그래도 계속 진행하시겠습니까?"
+      );
+      if (!confirmSubmit) {
+        return;
+      }
     }
 
     // 추출된 정보를 포함한 리뷰 데이터 구성
