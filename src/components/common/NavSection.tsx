@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Button from "@/components/common/Button";
 import useThemeMode from "@/hooks/useDarkMode";
 import dynamic from "next/dynamic";
@@ -32,6 +32,7 @@ const NavSection = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userNickname, setUserNickname] = useState("");
   const { themeMode, cycleTheme, isLoading } = useThemeMode();
+  const planMenuRef = useRef<HTMLDivElement | null>(null);
 
   // 로그인 상태 확인 (클라이언트에서만 실행)
   useEffect(() => {
@@ -93,6 +94,22 @@ const NavSection = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // AI 여행 계획 드롭다운: 바깥 클릭 시에만 닫히도록 처리
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      if (!planMenuRef.current) return;
+      const target = event.target as Node;
+      if (!planMenuRef.current.contains(target)) {
+        setIsPlanMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleDocumentClick);
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentClick);
+    };
   }, []);
 
   // 테마 변경 핸들러
@@ -259,13 +276,13 @@ const NavSection = () => {
   const getLinkClasses = () => {
     switch (themeMode) {
       case "original":
-        return "hidden md:block text-pink-500 text-sm font-medium hover:text-pink-600 px-3 py-2 rounded-full hover:bg-pink-50 transition-colors";
+        return "hidden md:inline-flex items-center whitespace-nowrap align-middle text-pink-500 text-sm font-medium hover:text-pink-600 px-3 py-2 rounded-full hover:bg-pink-50 transition-colors";
       case "light":
-        return "hidden md:block text-gray-700 text-sm font-medium hover:text-gray-900 px-3 py-2 rounded-full hover:bg-gray-50 transition-colors";
+        return "hidden md:inline-flex items-center whitespace-nowrap align-middle text-gray-700 text-sm font-medium hover:text-gray-900 px-3 py-2 rounded-full hover:bg-gray-50 transition-colors";
       case "dark":
-        return "hidden md:block text-white text-sm font-medium hover:text-gray-300 px-3 py-2 rounded-full hover:bg-gray-800 transition-colors";
+        return "hidden md:inline-flex items-center whitespace-nowrap align-middle text-white text-sm font-medium hover:text-gray-300 px-3 py-2 rounded-full hover:bg-gray-800 transition-colors";
       default:
-        return "hidden md:block text-pink-500 text-sm font-medium hover:text-pink-600 px-3 py-2 rounded-full hover:bg-pink-50 transition-colors";
+        return "hidden md:inline-flex items-center whitespace-nowrap align-middle text-pink-500 text-sm font-medium hover:text-pink-600 px-3 py-2 rounded-full hover:bg-pink-50 transition-colors";
     }
   };
 
@@ -397,9 +414,6 @@ const NavSection = () => {
           <Link href="/popular-courses" className={getLinkClasses()}>
             추천 인기 여행코스
           </Link>
-          <Link href="/destinations" className={getLinkClasses()}>
-            인기 여행지
-          </Link>
           <Link href="/reviews" className={getLinkClasses()}>
             리뷰보기
           </Link>
@@ -416,15 +430,15 @@ const NavSection = () => {
           <div
             className="relative hidden md:block"
             onMouseEnter={() => setIsPlanMenuOpen(true)}
-            onMouseLeave={() => setIsPlanMenuOpen(false)}
+            ref={planMenuRef}
           >
             <Link href="/travel/create" className="block">
               <Button
                 variant="outline"
                 size="sm"
-                className={`font-medium font-semibold ${getDashboardTextClass()}`}
+                className={`font-semibold ${getDashboardTextClass()}`}
               >
-                <span>AI 여행 계획</span>
+                <span className="whitespace-nowrap">AI 여행 계획</span>
               </Button>
             </Link>
 
@@ -455,7 +469,7 @@ const NavSection = () => {
             >
               <FaUserCircle className={getUserIconClasses()} />
               <span
-                className={`hidden md:block text-sm font-semibold ${getDashboardTextClass()}`}
+                className={`hidden md:block text-sm font-semibold whitespace-nowrap ${getDashboardTextClass()}`}
               >
                 로그인
               </span>
@@ -470,7 +484,7 @@ const NavSection = () => {
             >
               <FaUserCircle className={getUserIconClasses()} />
               <span
-                className={`hidden md:block text-sm font-semibold ${getDashboardTextClass()}`}
+                className={`hidden md:block text-sm font-semibold whitespace-nowrap ${getDashboardTextClass()}`}
               >
                 {userNickname}
               </span>
