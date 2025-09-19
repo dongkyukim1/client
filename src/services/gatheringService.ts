@@ -1,30 +1,8 @@
 import { api } from "./api";
 import axios from "axios";
 
-// 배포환경에서는 프록시 사용하여 Mixed Content 방지
-const isProduction = typeof window !== "undefined" && window.location.protocol === "https:";
-const gatheringApi = isProduction ? axios.create({
-  baseURL: "", // 현재 도메인의 프록시 사용
-  timeout: 10000,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
-}) : api;
-
-// 배포환경에서는 Authorization 헤더 추가
-if (isProduction && typeof window !== "undefined") {
-  gatheringApi.interceptors.request.use(async (config) => {
-    const accessToken = sessionStorage.getItem("accessToken");
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-      console.log("[GatheringService] 🔑 프록시용 토큰 설정");
-    } else {
-      console.log("[GatheringService] ⚠️ 프록시용 토큰 없음");
-    }
-    return config;
-  });
-}
+// 아까 성공했던 방식: 직접 서버 API 호출
+const gatheringApi = api;
 export interface GatheringPost {
   id: number;
   title: string;
